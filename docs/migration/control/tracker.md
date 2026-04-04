@@ -14,7 +14,7 @@
 | ID | Task | Depends on | Status | Acceptance checkpoint |
 |---|---|---|---|---|
 | T001 | Test harness bootstrap | - | Done | Базовая test-инфраструктура создана |
-| T002 | Upstream fixtures ingestion | T001 | Planned | Unit/corpus фикстуры доступны в Go |
+| T002 | Upstream fixtures ingestion | T001 | Done | Unit/corpus фикстуры доступны в Go |
 | T003 | Core API/offset invariants | T001 | Planned | Инварианты offsets закреплены тестами |
 | T004 | Tokenizer atoms and splitter | T003 | Planned | Atom/split behavior совпадает с upstream |
 | T005 | Tokenizer trivial split behavior | T004 | Planned | split-space parity подтвержден |
