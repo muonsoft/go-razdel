@@ -1,23 +1,38 @@
-package razdel
+package razdel_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/muonsoft/go-razdel"
+	"github.com/muonsoft/go-razdel/internal/testkit"
+)
 
 func TestTokenize_emptyAndStub(t *testing.T) {
 	t.Parallel()
-	if got := Tokenize(""); len(got) != 0 {
-		t.Fatalf("empty input: want len 0, got %d", len(got))
+	empty := razdel.Tokenize("")
+	if len(empty) != 0 {
+		t.Fatalf("empty input: want len 0, got %d", len(empty))
 	}
-	if got := Tokenize("привет"); len(got) != 0 {
+	testkit.AssertTokenOffsetContract(t, "", empty)
+
+	got := razdel.Tokenize("привет")
+	if len(got) != 0 {
 		t.Fatalf("stub: non-empty input must still return empty, got len %d", len(got))
 	}
+	testkit.AssertTokenOffsetContract(t, "привет", got)
 }
 
 func TestSentenize_emptyAndStub(t *testing.T) {
 	t.Parallel()
-	if got := Sentenize(""); len(got) != 0 {
-		t.Fatalf("empty input: want len 0, got %d", len(got))
+	empty := razdel.Sentenize("")
+	if len(empty) != 0 {
+		t.Fatalf("empty input: want len 0, got %d", len(empty))
 	}
-	if got := Sentenize("Привет."); len(got) != 0 {
+	testkit.AssertSentenceOffsetContract(t, "", empty)
+
+	got := razdel.Sentenize("Привет.")
+	if len(got) != 0 {
 		t.Fatalf("stub: non-empty input must still return empty, got len %d", len(got))
 	}
+	testkit.AssertSentenceOffsetContract(t, "Привет.", got)
 }
