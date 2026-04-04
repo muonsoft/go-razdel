@@ -1,6 +1,9 @@
 package testkit
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestValidateHalfOpen_ok(t *testing.T) {
 	t.Parallel()
@@ -26,8 +29,11 @@ func TestValidateHalfOpen_rejects(t *testing.T) {
 		{0, 4, 3},
 	}
 	for _, tt := range tests {
-		if err := ValidateHalfOpen(tt.start, tt.end, tt.n); err == nil {
-			t.Fatalf("ValidateHalfOpen(%d,%d,%d): want error", tt.start, tt.end, tt.n)
-		}
+		t.Run(fmt.Sprintf("%d_%d_%d", tt.start, tt.end, tt.n), func(t *testing.T) {
+			t.Parallel()
+			if err := ValidateHalfOpen(tt.start, tt.end, tt.n); err == nil {
+				t.Errorf("ValidateHalfOpen(%d,%d,%d): want error", tt.start, tt.end, tt.n)
+			}
+		})
 	}
 }

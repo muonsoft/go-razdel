@@ -9,7 +9,8 @@ import (
 	"github.com/muonsoft/go-razdel/internal/testkit"
 )
 
-// Synthetic Token/Sentence slices exercise Variant A offsets (docs/contracts.md) independent of tokenizer logic.
+// Synthetic Token/Sentence slices exercise Variant A offsets (docs/contracts.md) via testkit.
+// They do not call Tokenize/Sentenize; extend with real API assertions when T004+ implements segmentation.
 func TestContract_tokenOffsets_table(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -54,34 +55,51 @@ func TestContract_tokenOffsets_table(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			testkit.AssertTokenOffsetContract(t, tt.src, tt.tokens)
-			for i, tok := range tt.tokens {
-				if err := testkit.ValidateHalfOpen(tok.Start, tok.End, len(tt.src)); err != nil {
-					t.Fatalf("token[%d] half-open: %v", i, err)
-				}
-			}
 		})
 	}
 }
 
 func TestContract_sentenceOffsets_table(t *testing.T) {
 	t.Parallel()
-	src := "Первое. Второе."
+	srcTwo := "Первое. Второе."
+	emojiSrc := "Привет 🙂."
 	tests := []struct {
 		name string
+		src  string
 		s    []razdel.Sentence
 	}{
 		{
+			name: "empty_string",
+			src:  "",
+			s:    nil,
+		},
+		{
+			name: "single_sentence",
+			src:  "Одно.",
+			s: []razdel.Sentence{
+				{Span: razdel.Span{Start: 0, End: len("Одно.")}, Text: "Одно."},
+			},
+		},
+		{
 			name: "two_sentences",
+			src:  srcTwo,
 			s: []razdel.Sentence{
 				{Span: razdel.Span{Start: 0, End: len("Первое.")}, Text: "Первое."},
-				{Span: razdel.Span{Start: len("Первое.") + 1, End: len(src)}, Text: "Второе."},
+				{Span: razdel.Span{Start: len("Первое.") + 1, End: len(srcTwo)}, Text: "Второе."},
+			},
+		},
+		{
+			name: "sentence_with_emoji",
+			src:  emojiSrc,
+			s: []razdel.Sentence{
+				{Span: razdel.Span{Start: 0, End: len(emojiSrc)}, Text: emojiSrc},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			testkit.AssertSentenceOffsetContract(t, src, tt.s)
+			testkit.AssertSentenceOffsetContract(t, tt.src, tt.s)
 		})
 	}
 }
@@ -96,7 +114,6 @@ func TestContract_tokenizeSentenize_deterministic(t *testing.T) {
 		"Line one.\nLine two.",
 	}
 	for _, s := range inputs {
-		s := s
 		t.Run(fmt.Sprintf("%q", s), func(t *testing.T) {
 			t.Parallel()
 			tok1 := razdel.Tokenize(s)
@@ -123,7 +140,6 @@ func TestContract_tokenizeSentenize_validUTF8_noPanic(t *testing.T) {
 		"mixed привет 🙂",
 	}
 	for _, s := range cases {
-		s := s
 		t.Run(fmt.Sprintf("%q", s), func(t *testing.T) {
 			t.Parallel()
 			_ = razdel.Tokenize(s)
