@@ -16,7 +16,7 @@
 | T001 | Test harness bootstrap | - | Done | Базовая test-инфраструктура создана |
 | T002 | Upstream fixtures ingestion | T001 | Done | Unit/corpus фикстуры доступны в Go |
 | T003 | Core API/offset invariants | T001 | Done | Инварианты offsets закреплены тестами |
-| T004 | Tokenizer atoms and splitter | T003 | Planned | Atom/split behavior совпадает с upstream |
+| T004 | Tokenizer atoms and splitter | T003 | Done | Atom/split behavior совпадает с upstream |
 | T005 | Tokenizer trivial split behavior | T004 | Planned | split-space parity подтвержден |
 | T006 | Tokenizer dash/underscore rules | T005 | Planned | Кейсы `что-то`, `К_тому_же` проходят |
 | T007 | Tokenizer float/fraction rules | T005 | Planned | Кейсы `1,5`, `1/2` проходят |

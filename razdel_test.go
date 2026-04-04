@@ -7,7 +7,7 @@ import (
 	"github.com/muonsoft/go-razdel/internal/testkit"
 )
 
-func TestTokenize_emptyAndStub(t *testing.T) {
+func TestTokenize_emptyAndCyrillic(t *testing.T) {
 	t.Parallel()
 	empty := razdel.Tokenize("")
 	if len(empty) != 0 {
@@ -15,11 +15,11 @@ func TestTokenize_emptyAndStub(t *testing.T) {
 	}
 	testkit.AssertTokenOffsetContract(t, "", empty)
 
-	got := razdel.Tokenize("привет")
-	if len(got) != 0 {
-		t.Fatalf("stub: non-empty input must still return empty, got len %d", len(got))
-	}
-	testkit.AssertTokenOffsetContract(t, "привет", got)
+	src := "привет"
+	got := razdel.Tokenize(src)
+	testkit.AssertTokenTextsEqual(t, src, got, []string{"привет"})
+
+	testkit.AssertTokenTextsEqual(t, "a b", razdel.Tokenize("a b"), []string{"a", "b"})
 }
 
 func TestSentenize_emptyAndStub(t *testing.T) {

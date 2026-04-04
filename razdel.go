@@ -1,8 +1,9 @@
 // Package razdel provides Russian text tokenization and sentence segmentation.
 //
 // Public API and offset semantics are defined in docs/contracts.md (UTF-8 byte offsets, Variant A).
-// Current implementations are stubs that return empty results until parity with upstream is implemented.
 package razdel
+
+import "github.com/muonsoft/go-razdel/internal/tokenize"
 
 // Span is a half-open byte interval into the original UTF-8 string: [Start, End).
 // Start and End are measured in bytes; see docs/contracts.md.
@@ -23,10 +24,25 @@ type Sentence struct {
 	Text string
 }
 
-// Tokenize splits text into tokens. Stub: returns an empty slice for any input.
+// Tokenize splits text into tokens with behavior aligned to upstream
+// third_party/razdel/razdel/segmenters/tokenize.py (atoms, splits, join rules).
 func Tokenize(text string) []Token {
-	_ = text
-	return nil
+	if text == "" {
+		return nil
+	}
+	spans := tokenize.TokenSpans(text)
+	if len(spans) == 0 {
+		return nil
+	}
+	out := make([]Token, len(spans))
+	for i, s := range spans {
+		start, end := s[0], s[1]
+		out[i] = Token{
+			Span: Span{Start: start, End: end},
+			Text: text[start:end],
+		}
+	}
+	return out
 }
 
 // Sentenize splits text into sentences. Stub: returns an empty slice for any input.
