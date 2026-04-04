@@ -74,8 +74,8 @@ func AssertSentenceTextsEqual(tb testing.TB, src string, sents []razdel.Sentence
 
 func validateSpanText(kind string, idx int, src string, start, end int, text string) error {
 	n := len(src)
-	if start < 0 || end < 0 || start > end || end > n {
-		return fmt.Errorf("%s[%d]: invalid span [%d,%d) for src len %d", kind, idx, start, end, n)
+	if err := ValidateHalfOpen(start, end, n); err != nil {
+		return fmt.Errorf("%s[%d]: %w", kind, idx, err)
 	}
 	slice := src[start:end]
 	if slice != text {
