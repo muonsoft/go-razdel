@@ -1,0 +1,7 @@
+source_submodule_commit=668dbe191a5cfd94bebf9155e2ffa5f94ff3fe33
+sample_algorithm=first_32_indices_of_rand.Perm(n)_with_PCG(1,1)
+quick_tokens_lines=32
+quick_sents_lines=32
+upstream_tokens_path=third_party/razdel/razdel/tests/data/tokens.txt
+upstream_sents_path=third_party/razdel/razdel/tests/data/sents.txt
+note=Python upstream uses random.seed(1) and random.sample(list(lines), count); Go uses PCG-based Perm for deterministic full-file sampling without loading all lines into a Python list first.
