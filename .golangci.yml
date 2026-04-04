@@ -1,0 +1,31 @@
+# golangci-lint v2 schema — see https://golangci-lint.run/docs/configuration/file/
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - durationcheck
+    - errcheck
+    - govet
+    - ineffassign
+    - misspell
+    - nolintlint
+    - staticcheck
+    - thelper
+    - unconvert
+    - unused
+  settings:
+    misspell:
+      locale: US
+    nolintlint:
+      require-explanation: true
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$

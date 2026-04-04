@@ -4,18 +4,22 @@ Go-порт библиотеки [natasha/razdel](https://github.com/natasha/raz
 
 ## Status
 
-Проект находится в стадии bootstrap/pre-implementation:
+Проект в ранней стадии:
 - инициализирован Go module;
 - upstream подключен как git submodule;
-- подготовлены базовые правила для дальнейшей итеративной разработки.
+- публичный API и типы соответствуют `docs/contracts.md`;
+- `Tokenize` / `Sentenize` пока заглушки и возвращают пустой результат для любого ввода.
 
-На этом этапе перенос алгоритмов из Python в Go не выполняется.
+Реализация алгоритмов и parity с upstream выполняются поэтапно.
 
 ## Repository Layout
 
 - `go.mod` — модуль `github.com/muonsoft/go-razdel`.
 - `third_party/razdel` — upstream submodule с эталонной реализацией.
 - `AGENTS.md` — правила для агентной работы в репозитории.
+- `docs/contracts.md` — контрактные требования v0 (включая байтовые смещения UTF-8).
+- `.github/workflows/ci.yml` — CI: `go test`, `go vet`, `golangci-lint`.
+- `.golangci.yml` — конфигурация линтера (schema v2).
 
 ## Getting Started
 
@@ -32,6 +36,16 @@ go version
 go list ./...
 ```
 
+Локально (при установленном [golangci-lint](https://golangci-lint.run/)):
+
+```bash
+golangci-lint run ./...
+```
+
 ## Upstream Pinning
 
 Submodule всегда фиксируется на конкретный commit upstream. Обновлять `third_party/razdel` нужно только отдельной, явной задачей и отдельным коммитом, чтобы изменения поведения были полностью трассируемы.
+
+## Contracts
+
+Верхнеуровневые контрактные требования описаны в `docs/contracts.md`.
