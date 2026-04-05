@@ -1,0 +1,186 @@
+// Package sentenize implements sentence split primitives aligned with upstream
+// third_party/razdel/razdel/segmenters/sentenize.py (SentSplit / SentSplitter).
+package sentenize
+
+import (
+	"regexp"
+	"unicode"
+	"unicode/utf8"
+)
+
+// DefaultWindow is the upstream SentSplitter default (10 Unicode code points).
+const DefaultWindow = 10
+
+// delimiterRE matches upstream DELIMITER: smileys or punctuation/closing delimiters.
+// See sentenize.DELIMITER in third_party/razdel.
+var delimiterRE = regexp.MustCompile(`([=:;]-?[)(]{1,3}|[.?!…;"\x{201e}'\x{bb}\x{201d}\x{2019}\)\]\}])`)
+
+var (
+	firstTokenRE = regexp.MustCompile(`(?s)^\s*([\p{L}\p{M}\p{Pc}\p{Nl}\p{No}]+|\p{Nd}+|[^\p{L}\p{N}\p{M}\p{Pc}\p{Z}])`)
+	lastTokenRE  = regexp.MustCompile(`(?s)([\p{L}\p{M}\p{Pc}\p{Nl}\p{No}]+|\p{Nd}+|[^\p{L}\p{N}\p{M}\p{Pc}\p{Z}])\s*$`)
+	wordRE       = regexp.MustCompile(`(?s)([\p{L}\p{M}\p{Pc}\p{Nl}\p{No}]+|\p{Nd}+)`)
+	tokenRE      = regexp.MustCompile(`[\p{L}\p{M}\p{Pc}\p{Nl}\p{No}]+|\p{Nd}+|[^\p{L}\p{N}\p{M}\p{Pc}\p{Z}]`)
+	pairSokrRE   = regexp.MustCompile(`(?s)([\p{L}\p{N}\p{M}\p{Pc}])\s*\.\s*([\p{L}\p{N}\p{M}\p{Pc}])\s*$`)
+	intSokrRE    = regexp.MustCompile(`(?s)\p{Nd}+\s*-?\s*([\p{L}\p{N}\p{M}\p{Pc}]+)\s*$`)
+)
+
+// SentSplit mirrors upstream SentSplit(left, delimiter, right, buffer=None).
+type SentSplit struct {
+	Left, Delimiter, Right string
+	Buffer                 *string
+}
+
+// RightSpacePrefix mirrors SentSplit.right_space_prefix (upstream SPACE_PREFIX).
+func (s *SentSplit) RightSpacePrefix() bool {
+	if s.Right == "" {
+		return false
+	}
+	r, _ := utf8.DecodeRuneInString(s.Right)
+	return unicode.IsSpace(r)
+}
+
+// LeftSpaceSuffix mirrors SentSplit.left_space_suffix (upstream SPACE_SUFFIX).
+func (s *SentSplit) LeftSpaceSuffix() bool {
+	if s.Left == "" {
+		return false
+	}
+	r, _ := utf8.DecodeLastRuneInString(s.Left)
+	return unicode.IsSpace(r)
+}
+
+// RightToken mirrors SentSplit.right_token (upstream FIRST_TOKEN).
+func (s *SentSplit) RightToken() string {
+	m := firstTokenRE.FindStringSubmatch(s.Right)
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
+
+// LeftToken mirrors SentSplit.left_token (upstream LAST_TOKEN).
+func (s *SentSplit) LeftToken() string {
+	m := lastTokenRE.FindStringSubmatch(s.Left)
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
+
+// LeftPairSokr mirrors SentSplit.left_pair_sokr (upstream PAIR_SOKR).
+func (s *SentSplit) LeftPairSokr() (a, b string, ok bool) {
+	loc := pairSokrRE.FindStringSubmatchIndex(s.Left)
+	if loc == nil {
+		return "", "", false
+	}
+	return s.Left[loc[2]:loc[3]], s.Left[loc[4]:loc[5]], true
+}
+
+// LeftIntSokr mirrors SentSplit.left_int_sokr (upstream INT_SOKR).
+func (s *SentSplit) LeftIntSokr() (word string, ok bool) {
+	loc := intSokrRE.FindStringSubmatchIndex(s.Left)
+	if loc == nil {
+		return "", false
+	}
+	return s.Left[loc[2]:loc[3]], true
+}
+
+// RightWord mirrors SentSplit.right_word (upstream WORD).
+func (s *SentSplit) RightWord() string {
+	m := wordRE.FindStringSubmatch(s.Right)
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
+
+// BufferTokens mirrors SentSplit.buffer_tokens (upstream TOKEN.findall); unset buffer returns nil.
+func (s *SentSplit) BufferTokens() []string {
+	if s.Buffer == nil {
+		return nil
+	}
+	return tokenRE.FindAllString(*s.Buffer, -1)
+}
+
+// BufferFirstToken mirrors SentSplit.buffer_first_token; unset buffer returns "".
+func (s *SentSplit) BufferFirstToken() string {
+	if s.Buffer == nil {
+		return ""
+	}
+	m := firstTokenRE.FindStringSubmatch(*s.Buffer)
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
+
+func onlyWhitespace(text string) bool {
+	for _, r := range text {
+		if !unicode.IsSpace(r) {
+			return false
+		}
+	}
+	return true
+}
+
+// runePrefixBefore returns the last maxRunes runes of s[:endByte].
+func runePrefixBefore(s string, endByte, maxRunes int) string {
+	if endByte <= 0 {
+		return ""
+	}
+	if endByte > len(s) {
+		endByte = len(s)
+	}
+	prefix := s[:endByte]
+	runes := []rune(prefix)
+	if len(runes) <= maxRunes {
+		return prefix
+	}
+	return string(runes[len(runes)-maxRunes:])
+}
+
+// runeSuffixAfter returns the first maxRunes runes of s[startByte:].
+func runeSuffixAfter(s string, startByte, maxRunes int) string {
+	if startByte < 0 {
+		startByte = 0
+	}
+	if startByte >= len(s) {
+		return ""
+	}
+	suffix := s[startByte:]
+	runes := []rune(suffix)
+	if len(runes) <= maxRunes {
+		return suffix
+	}
+	return string(runes[:maxRunes])
+}
+
+// SentSplitterParts returns the interleaved []any stream from upstream SentSplitter.__call__:
+// string chunks and *SentSplit events. Window is in Unicode code points (Python str slice).
+// For whitespace-only input, returns nil (upstream yields nothing).
+func SentSplitterParts(text string, window int) []any {
+	if onlyWhitespace(text) {
+		return nil
+	}
+	if window <= 0 {
+		window = DefaultWindow
+	}
+	idx := delimiterRE.FindAllStringIndex(text, -1)
+	if len(idx) == 0 {
+		return []any{text}
+	}
+	out := make([]any, 0, len(idx)*2+1)
+	prev := 0
+	for _, loc := range idx {
+		start, stop := loc[0], loc[1]
+		delim := text[start:stop]
+		out = append(out, text[prev:start])
+		out = append(out, &SentSplit{
+			Left:      runePrefixBefore(text, start, window),
+			Delimiter: delim,
+			Right:     runeSuffixAfter(text, stop, window),
+		})
+		prev = stop
+	}
+	out = append(out, text[prev:])
+	return out
+}

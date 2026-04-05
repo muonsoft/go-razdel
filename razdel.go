@@ -46,6 +46,7 @@ func Tokenize(text string) []Token {
 }
 
 // Sentenize splits text into sentences. Stub: returns an empty slice for any input.
+// Split stream and SentSplit accessors live in internal/sentenize (upstream SentSplitter / SentSplit).
 func Sentenize(text string) []Sentence {
 	_ = text
 	return nil
