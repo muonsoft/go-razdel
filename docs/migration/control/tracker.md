@@ -18,7 +18,7 @@
 | T003 | Core API/offset invariants | T001 | Done | Инварианты offsets закреплены тестами |
 | T004 | Tokenizer atoms and splitter | T003 | Done | Atom/split behavior совпадает с upstream |
 | T005 | Tokenizer trivial split behavior | T004 | Done | split-space parity подтвержден |
-| T006 | Tokenizer dash/underscore rules | T005 | Planned | Кейсы `что-то`, `К_тому_же` проходят |
+| T006 | Tokenizer dash/underscore rules | T005 | Done | Кейсы `что-то`, `К_тому_же` проходят |
 | T007 | Tokenizer float/fraction rules | T005 | Planned | Кейсы `1,5`, `1/2` проходят |
 | T008 | Tokenizer punct/other/yahoo rules | T006,T007 | Planned | Пунктуация/smile/mixed-script parity |
 | T009 | Tokenizer unit parity suite | T008 | Planned | Все upstream unit tokenize кейсы в Go |
