@@ -10,6 +10,22 @@ const join = 1
 
 var smileRE = regexp.MustCompile(`^[=:;]-?[)(]{1,3}$`)
 
+// splitSpace mirrors upstream tokenize.split_space: non-empty delimiter always
+// yields SPLIT (tokens do not join across spaces or other gaps between atoms).
+// See third_party/razdel/razdel/segmenters/tokenize.py.
+func splitSpace(s *tokenSplit) bool {
+	return s.Delimiter != ""
+}
+
+// shouldJoin mirrors TokenSegmenter.join when only join rules apply after trivial
+// split: join iff delimiter is empty and a rule returns JOIN.
+func shouldJoin(s *tokenSplit) bool {
+	if splitSpace(s) {
+		return false
+	}
+	return joinSplit(s)
+}
+
 // tokenSplit carries atom windows for join rules (upstream TokenSplit).
 type tokenSplit struct {
 	leftAtoms  []Atom
@@ -227,7 +243,7 @@ func SegmentStrings(parts []any) []string {
 		right, _ := parts[i+1].(string)
 		sp.buffer = buffer
 		// TokenSegmenter.segment: join only when delimiter is empty (see tokenize.py).
-		if sp.Delimiter == "" && joinSplit(sp) {
+		if shouldJoin(sp) {
 			buffer += right
 		} else {
 			out = append(out, buffer)
