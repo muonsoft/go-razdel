@@ -8,7 +8,7 @@ Go-порт библиотеки [natasha/razdel](https://github.com/natasha/raz
 - инициализирован Go module;
 - upstream подключен как git submodule;
 - публичный API и типы соответствуют `docs/contracts.md`;
-- `Tokenize` реализован с ориентацией на upstream; `Sentenize` применяет trivial-слой join-правил upstream (остальные правила — в следующих задачах).
+- `Tokenize` реализован с ориентацией на upstream; `Sentenize` применяет trivial-слой и правила сокращений/инициалов (`sokr_left`, `inside_pair_sokr`, `initials_left`); списки, кавычки/скобки и `dash_right` — в следующих задачах.
 
 Реализация алгоритмов и parity с upstream выполняются поэтапно.
 

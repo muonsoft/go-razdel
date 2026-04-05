@@ -50,15 +50,15 @@ func Tokenize(text string) []Token {
 	return out
 }
 
-// Sentenize splits text into sentences using the trivial join layer from upstream
-// sentenize.py (empty_side, no_space_prefix, lower_right, delimiter_right). Further
-// upstream rules (sokr, bounds, bullets, dash) are not applied yet; parity grows with later tasks.
+// Sentenize splits text into sentences using upstream sentenize.py rules through
+// initials_left (trivial layer plus sokr_left, inside_pair_sokr, initials_left).
+// list_item, quote/bracket bounds, and dash_right are not applied yet (later tasks).
 func Sentenize(text string) []Sentence {
 	if strings.TrimSpace(text) == "" {
 		return nil
 	}
 	parts := sentenize.SentSplitterParts(text, sentenize.DefaultWindow)
-	raw := sentenize.Segment(parts, sentenize.JoinTrivial)
+	raw := sentenize.Segment(parts, sentenize.JoinDefault)
 	chunks := sentenize.PostStrip(raw)
 	spans := sentenize.ByteSpans(text, chunks)
 	out := make([]Sentence, 0, len(spans))

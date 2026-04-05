@@ -25,7 +25,7 @@
 | T010 | Tokenizer integration corpus suite | T009,T002 | Done | quick/full corpus режимы для tokenize |
 | T011 | Sentenizer splitter and model | T003 | Done | SentSplit/SentSplitter parity |
 | T012 | Sentenizer trivial rules | T011 | Done | empty/no-space/lower/delimiter parity |
-| T013 | Sentenizer sokr and initials rules | T012 | Planned | сокращения/инициалы parity |
+| T013 | Sentenizer sokr and initials rules | T012 | Done | сокращения/инициалы parity |
 | T014 | Sentenizer quote/bracket bound rules | T012 | Planned | кавычки/скобки на границах parity |
 | T015 | Sentenizer bullet and dash rules | T012 | Planned | списки/тире-диалог parity |
 | T016 | Sentenizer unit parity and post-processing API parity | T013,T014,T015 | Planned | unit parity + `strip()` + API-контракты соблюдены |
