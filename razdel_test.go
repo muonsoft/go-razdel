@@ -20,6 +20,7 @@ func TestTokenize_emptyAndCyrillic(t *testing.T) {
 	testkit.AssertTokenTextsEqual(t, src, got, []string{"привет"})
 
 	testkit.AssertTokenTextsEqual(t, "a b", razdel.Tokenize("a b"), []string{"a", "b"})
+	testkit.AssertTokenTextsEqual(t, "привет, мир", razdel.Tokenize("привет, мир"), []string{"привет", ",", "мир"})
 }
 
 func TestSentenize_emptyAndStub(t *testing.T) {

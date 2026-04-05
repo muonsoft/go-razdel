@@ -71,6 +71,7 @@ func TestUpstream_tokenTexts_parity(t *testing.T) {
 		"a b",
 		"ab",
 		"привет мир",
+		"привет, мир",
 		"1,5",
 		"1/2",
 		"что-то",
