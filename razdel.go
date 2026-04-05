@@ -3,7 +3,12 @@
 // Public API and offset semantics are defined in docs/contracts.md (UTF-8 byte offsets, Variant A).
 package razdel
 
-import "github.com/muonsoft/go-razdel/internal/tokenize"
+import (
+	"strings"
+
+	"github.com/muonsoft/go-razdel/internal/sentenize"
+	"github.com/muonsoft/go-razdel/internal/tokenize"
+)
 
 // Span is a half-open byte interval into the original UTF-8 string: [Start, End).
 // Start and End are measured in bytes; see docs/contracts.md.
@@ -45,9 +50,24 @@ func Tokenize(text string) []Token {
 	return out
 }
 
-// Sentenize splits text into sentences. Stub: returns an empty slice for any input.
-// Split stream and SentSplit accessors live in internal/sentenize (upstream SentSplitter / SentSplit).
+// Sentenize splits text into sentences using the trivial join layer from upstream
+// sentenize.py (empty_side, no_space_prefix, lower_right, delimiter_right). Further
+// upstream rules (sokr, bounds, bullets, dash) are not applied yet; parity grows with later tasks.
 func Sentenize(text string) []Sentence {
-	_ = text
-	return nil
+	if strings.TrimSpace(text) == "" {
+		return nil
+	}
+	parts := sentenize.SentSplitterParts(text, sentenize.DefaultWindow)
+	raw := sentenize.Segment(parts, sentenize.JoinTrivial)
+	chunks := sentenize.PostStrip(raw)
+	spans := sentenize.ByteSpans(text, chunks)
+	out := make([]Sentence, 0, len(spans))
+	for _, sp := range spans {
+		start, end := sp[0], sp[1]
+		out = append(out, Sentence{
+			Span: Span{Start: start, End: end},
+			Text: text[start:end],
+		})
+	}
+	return out
 }

@@ -23,7 +23,7 @@ func TestTokenize_emptyAndCyrillic(t *testing.T) {
 	testkit.AssertTokenTextsEqual(t, "привет, мир", razdel.Tokenize("привет, мир"), []string{"привет", ",", "мир"})
 }
 
-func TestSentenize_emptyAndStub(t *testing.T) {
+func TestSentenize_emptyWhitespaceAndTrivial(t *testing.T) {
 	t.Parallel()
 	empty := razdel.Sentenize("")
 	if len(empty) != 0 {
@@ -31,9 +31,22 @@ func TestSentenize_emptyAndStub(t *testing.T) {
 	}
 	testkit.AssertSentenceOffsetContract(t, "", empty)
 
-	got := razdel.Sentenize("Привет.")
-	if len(got) != 0 {
-		t.Fatalf("stub: non-empty input must still return empty, got len %d", len(got))
+	ws := razdel.Sentenize("  \n\t  ")
+	if len(ws) != 0 {
+		t.Fatalf("whitespace-only: want len 0, got %d", len(ws))
 	}
-	testkit.AssertSentenceOffsetContract(t, "Привет.", got)
+	testkit.AssertSentenceOffsetContract(t, "  \n\t  ", ws)
+
+	src := "Привет."
+	got := razdel.Sentenize(src)
+	if len(got) != 1 || got[0].Text != src {
+		t.Fatalf("got %#v want single sentence %q", got, src)
+	}
+	testkit.AssertSentenceOffsetContract(t, src, got)
+
+	split := razdel.Sentenize("a. B")
+	if len(split) != 2 || split[0].Text != "a." || split[1].Text != "B" {
+		t.Fatalf("got %#v want [a. B]", split)
+	}
+	testkit.AssertSentenceOffsetContract(t, "a. B", split)
 }
