@@ -21,6 +21,7 @@ jobs:
         with:
           go-version-file: go.mod
 
+      # Quick tokenizer corpus parity runs with default ./... (T010, quick_tokens_sample.txt).
       - name: Go test
         run: go test ./...
 
