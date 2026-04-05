@@ -242,7 +242,8 @@ func SegmentStrings(parts []any) []string {
 		}
 		right, _ := parts[i+1].(string)
 		sp.buffer = buffer
-		// TokenSegmenter.segment: join only when delimiter is empty (see tokenize.py).
+		// TokenSegmenter.segment: shouldJoin applies split_space first (non-empty delimiter
+		// => split), then join rules only when delimiter is empty. See tokenize.py.
 		if shouldJoin(sp) {
 			buffer += right
 		} else {
