@@ -26,4 +26,4 @@ const Endings = endings
 
 // PunctSet is the character class used in upstream ATOM's PUNCT alternative
 // (PUNCTS in tokenize.py: ascii punct + № … + dashes + quotes + brackets).
-const PunctSet = "\\/.!#$%&*+,.:;<=>?@^_`|~№…" + Dashes + Quotes + Brackets
+const PunctSet = "\\/!#$%&*+,.:;<=>?@^_`|~№…" + Dashes + Quotes + Brackets
