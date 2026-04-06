@@ -44,9 +44,10 @@ func TestSentenize_emptyWhitespaceAndTrivial(t *testing.T) {
 	}
 	testkit.AssertSentenceOffsetContract(t, src, got)
 
-	split := razdel.Sentenize("a. B")
-	if len(split) != 2 || split[0].Text != "a." || split[1].Text != "B" {
-		t.Fatalf("got %#v want [a. B]", split)
+	// Upstream list_item: single-letter "a" is in BULLET_CHARS, so "a. B" stays one sentence.
+	joined := razdel.Sentenize("a. B")
+	if len(joined) != 1 || joined[0].Text != "a. B" {
+		t.Fatalf("got %#v want single sentence %q (upstream sentenize)", joined, "a. B")
 	}
-	testkit.AssertSentenceOffsetContract(t, "a. B", split)
+	testkit.AssertSentenceOffsetContract(t, "a. B", joined)
 }

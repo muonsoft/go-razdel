@@ -23,4 +23,7 @@ const (
 
 	// Delimiters is upstream sentenize.DELIMITERS (splitter / delimiter_right set).
 	Delimiters = Endings + ";" + GenericQuotes + CloseQuotes + CloseBrackets
+
+	// Dashes is upstream punct.DASHES (sentenize.dash_right).
+	Dashes = "\u2011\u2013\u2014\u2212-"
 )
