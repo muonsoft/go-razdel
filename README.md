@@ -1,27 +1,49 @@
 # go-razdel
 
-Go-порт библиотеки [natasha/razdel](https://github.com/natasha/razdel).
+[![Go Reference](https://pkg.go.dev/badge/github.com/muonsoft/go-razdel.svg)](https://pkg.go.dev/github.com/muonsoft/go-razdel)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/muonsoft/go-razdel)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/muonsoft/go-razdel)
+![GitHub](https://img.shields.io/github/license/muonsoft/go-razdel)
+[![tests](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml/badge.svg)](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml)
 
-## Status
+`go-razdel` — Go-порт библиотеки сегментации текста **razdel** с фокусом на поведенческую совместимость с Python-оригиналом.
 
-Проект в ранней стадии:
-- инициализирован Go module;
-- upstream подключен как git submodule;
-- публичный API и типы соответствуют `docs/contracts.md`;
-- `Tokenize` реализован с ориентацией на upstream; `Sentenize` применяет trivial-слой и правила сокращений/инициалов (`sokr_left`, `inside_pair_sokr`, `initials_left`); списки, кавычки/скобки и `dash_right` — в следующих задачах.
+## Основной проект
 
-Реализация алгоритмов и parity с upstream выполняются поэтапно.
+Эталонная реализация, на которую ориентируется этот репозиторий:
 
-## Repository Layout
+- [natasha/razdel (GitHub)](https://github.com/natasha/razdel)
+- [razdel (PyPI)](https://pypi.org/project/razdel/)
 
-- `go.mod` — модуль `github.com/muonsoft/go-razdel`.
-- `third_party/razdel` — upstream submodule с эталонной реализацией.
-- `AGENTS.md` — правила для агентной работы в репозитории.
-- `docs/contracts.md` — контрактные требования v0 (включая байтовые смещения UTF-8).
-- `.github/workflows/ci.yml` — CI: `go test`, `go vet`, `golangci-lint`.
-- `.golangci.yml` — конфигурация линтера (schema v2).
+## Что уже реализовано
 
-## Getting Started
+- Публичный API:
+  - `Tokenize(text string) []Token`
+  - `Sentenize(text string) []Sentence`
+- Контракт смещений: `Start`/`End` в **байтах UTF-8**, полуинтервал `[Start, End)`.
+- `Tokenize` и `Sentenize` возвращают `Text == text[Start:End]` для каждого элемента.
+- Проверки parity с upstream:
+  - unit-набор для `Sentenize` (кейсы из upstream фикстур);
+  - differential-тесты (Go vs Python) для быстрых выборок токенов и предложений.
+- Фаззинг и инварианты для оффсетов.
+
+## Ограничения и важные отличия
+
+- Числовые смещения в Go и Python могут отличаться на Unicode-тексте, потому что:
+  - в Go API фиксирует **байтовые** индексы;
+  - в Python upstream работает с индексами `str` (кодпоинты).
+- Parity корректно сравнивать по последовательности `Text`, а не по «сырым» индексам без пересчета.
+- Для невалидного UTF-8 `Tokenize` не паникует; для `Sentenize` parity с Python не гарантируется.
+
+Детали контрактов и инвариантов: `docs/contracts.md`.
+
+## Установка
+
+```bash
+go get github.com/muonsoft/go-razdel
+```
+
+Для разработки в этом репозитории (нужен upstream submodule):
 
 ```bash
 git clone git@github.com:muonsoft/go-razdel.git
@@ -29,23 +51,64 @@ cd go-razdel
 git submodule update --init --recursive
 ```
 
-Проверка окружения Go:
+## Быстрый пример
 
-```bash
-go version
-go list ./...
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/muonsoft/go-razdel"
+)
+
+func main() {
+	text := "Привет, мир! Это тест."
+
+	for _, tok := range razdel.Tokenize(text) {
+		fmt.Printf("TOKEN  [%d:%d] %q\n", tok.Start, tok.End, tok.Text)
+	}
+
+	for _, sent := range razdel.Sentenize(text) {
+		fmt.Printf("SENT   [%d:%d] %q\n", sent.Start, sent.End, sent.Text)
+	}
+}
 ```
 
-Локально (при установленном [golangci-lint](https://golangci-lint.run/)):
+## Структуры данных
+
+- `Span`:
+  - `Start int`
+  - `End int`
+- `Token`:
+  - `Span`
+  - `Text string`
+- `Sentence`:
+  - `Span`
+  - `Text string`
+
+## Проверка и разработка
+
+Минимальный локальный набор:
 
 ```bash
+go test ./...
+go vet ./...
 golangci-lint run ./...
 ```
 
-## Upstream Pinning
+Differential-тесты с Python требуют:
 
-Submodule всегда фиксируется на конкретный commit upstream. Обновлять `third_party/razdel` нужно только отдельной, явной задачей и отдельным коммитом, чтобы изменения поведения были полностью трассируемы.
+- `python3` в `PATH`;
+- доступный submodule `third_party/razdel`;
+- импорт `razdel` через `PYTHONPATH` (настраивается тестами автоматически).
 
-## Contracts
+Отключить differential-тесты можно переменной:
 
-Верхнеуровневые контрактные требования описаны в `docs/contracts.md`.
+```bash
+RAZDEL_DIFFERENTIAL_PYTHON=0 go test ./...
+```
+
+## Статус проекта
+
+Проект развивается инкрементально: поведение переносится небольшими шагами, а совместимость с upstream подтверждается тестами и фикстурами.
