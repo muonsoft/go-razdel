@@ -303,15 +303,11 @@ func TokenSpans(text string) [][2]int {
 	out := make([][2]int, 0, len(chunks))
 	offset := 0
 	for _, chunk := range chunks {
-		start := strings.Index(text[offset:], chunk)
-		if start < 0 {
-			// Should not happen for well-formed tokenizer output.
-			start = strings.Index(text, chunk)
-			if start < 0 {
-				continue
-			}
+		idx := strings.Index(text[offset:], chunk)
+		if idx < 0 {
+			panic("tokenize: TokenSpans: chunk not found at expected offset (internal inconsistency)")
 		}
-		start += offset
+		start := offset + idx
 		end := start + len(chunk)
 		out = append(out, [2]int{start, end})
 		offset = end

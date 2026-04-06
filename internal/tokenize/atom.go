@@ -33,7 +33,7 @@ var punctLookup = makePunctLookup()
 
 // Atomize scans text into atoms using the same classification order as upstream ATOM regex.
 func Atomize(text string) []Atom {
-	var out []Atom
+	out := make([]Atom, 0, len(text)/4+1)
 	for i := 0; i < len(text); {
 		r, w := utf8.DecodeRuneInString(text[i:])
 		// Upstream ATOM.finditer never yields atoms for whitespace gaps (only \S via OTHER).
