@@ -29,7 +29,7 @@
 | T014 | Sentenizer quote/bracket bound rules | T012 | Done | кавычки/скобки на границах parity |
 | T015 | Sentenizer bullet and dash rules | T012 | Done | списки/тире-диалог parity |
 | T016 | Sentenizer unit parity and post-processing API parity | T013,T014,T015 | Done | unit parity + `strip()` + API-контракты соблюдены |
-| T017 | Sentenizer integration corpus suite | T016,T002 | Planned | quick/full corpus режимы для sentenize |
+| T017 | Sentenizer integration corpus suite | T016,T002 | Done | quick/full corpus режимы для sentenize |
 | T018 | Differential/fuzz/benchmark hardening | T010,T017 | Planned | differential + fuzz + benchmark внедрены |
 
 ## Release gate checklist

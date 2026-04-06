@@ -34,3 +34,16 @@ RAZDEL_TOKENIZE_INTEGRATION_FULL=1 go test ./internal/tokenize/ -run TestIntegra
 Set `RAZDEL_TOKENIZE_INTEGRATION_FULL=1` to enable; any other value (or unset) skips the full test.
 
 The full run compares `tokenize.TokenTexts` to the **partition etalon** in `tokens.txt` (same contract as upstream `test_int`). **25** lines in the pinned submodule disagree with `razdel.segmenters.tokenize` on the same text (fixture drift). Those partition strings are listed in `internal/tokenize/upstream_tokens_txt_drift_test.go`; the full test **skips** them (records `t.Skip` subtests with a reason in `-v` output) and asserts the rest of the corpus. After updating the submodule, refresh that list if the drift set changes.
+
+## Sentenizer integration corpus (T017)
+
+- **Quick (default):** `go test ./...` runs `TestIntegration_sentenize_quick_corpus` against `quick_sents_sample.txt` (deterministic sample from upstream `sents.txt`).
+- **Full (manual / nightly):** run the entire upstream file `third_party/razdel/razdel/tests/data/sents.txt` (~48.7k lines):
+
+```bash
+RAZDEL_SENTENIZE_INTEGRATION_FULL=1 go test ./internal/sentenize/ -run TestIntegration_sentenize_full_corpus -count=1 -v
+```
+
+Set `RAZDEL_SENTENIZE_INTEGRATION_FULL=1` to enable; any other value (or unset) skips the full test.
+
+The full run compares sentence texts from `razdel.Sentenize` to the **partition etalon** in `sents.txt` (same contract as upstream `test_sentenize.test_int`). If the pinned submodule ever contains lines where the file disagrees with `razdel.segmenters.sentenize` on the same text, list those partition strings in `internal/sentenize/upstream_sents_txt_drift_test.go` (same pattern as tokenizer drift). With the current pin, the drift set is empty.
