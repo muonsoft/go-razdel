@@ -62,7 +62,7 @@ func TestRuleCloseQuote_openQuoteDoesNotMatchBranches(t *testing.T) {
 
 func TestSegment_boundParityUpstream(t *testing.T) {
 	// Expected chunks match third_party/razdel/razdel/tests/test_sentenize.py BOUND (UNIT) cases
-	// under the same rule set omitting list_item and dash_right (T014 scope).
+	// with full default join rules (T015 list_item + dash_right do not change these).
 	cases := []struct {
 		text string
 		want []string
