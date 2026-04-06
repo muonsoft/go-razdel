@@ -51,8 +51,8 @@ func Tokenize(text string) []Token {
 }
 
 // Sentenize splits text into sentences using upstream sentenize.py rules through
-// initials_left (trivial layer plus sokr_left, inside_pair_sokr, initials_left).
-// list_item, quote/bracket bounds, and dash_right are not applied yet (later tasks).
+// close_bracket (trivial, sokr, close_quote, close_bracket). list_item and dash_right
+// are not applied yet (T015).
 func Sentenize(text string) []Sentence {
 	if strings.TrimSpace(text) == "" {
 		return nil
