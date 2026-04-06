@@ -14,38 +14,37 @@ func TestSentSplitterParts_whitespaceOnly(t *testing.T) {
 }
 
 func TestSentSplitterParts_upstreamStream(t *testing.T) {
-	// Expected slices mirror third_party/razdel/razdel/segmenters/sentenize.py SentSplitter().__call__.
 	cases := []struct {
 		text string
-		want []any
+		want []SentPart
 	}{
 		{
 			"a.b",
-			[]any{"a", &SentSplit{Left: "a", Delimiter: ".", Right: "b"}, "b"},
+			[]SentPart{{Text: "a"}, {Split: &SentSplit{Left: "a", Delimiter: ".", Right: "b"}}, {Text: "b"}},
 		},
 		{
 			":-)x",
-			[]any{"", &SentSplit{Left: "", Delimiter: ":-)", Right: "x"}, "x"},
+			[]SentPart{{Text: ""}, {Split: &SentSplit{Left: "", Delimiter: ":-)", Right: "x"}}, {Text: "x"}},
 		},
 		{
 			"  a.b  ",
-			[]any{"  a", &SentSplit{Left: "  a", Delimiter: ".", Right: "b  "}, "b  "},
+			[]SentPart{{Text: "  a"}, {Split: &SentSplit{Left: "  a", Delimiter: ".", Right: "b  "}}, {Text: "b  "}},
 		},
 		{
 			"привет.",
-			[]any{"привет", &SentSplit{Left: "привет", Delimiter: ".", Right: ""}, ""},
+			[]SentPart{{Text: "привет"}, {Split: &SentSplit{Left: "привет", Delimiter: ".", Right: ""}}, {Text: ""}},
 		},
 		{
 			"a„b",
-			[]any{"a", &SentSplit{Left: "a", Delimiter: "„", Right: "b"}, "b"},
+			[]SentPart{{Text: "a"}, {Split: &SentSplit{Left: "a", Delimiter: "„", Right: "b"}}, {Text: "b"}},
 		},
 		{
 			"word;x",
-			[]any{"word", &SentSplit{Left: "word", Delimiter: ";", Right: "x"}, "x"},
+			[]SentPart{{Text: "word"}, {Split: &SentSplit{Left: "word", Delimiter: ";", Right: "x"}}, {Text: "x"}},
 		},
 		{
 			"(x)",
-			[]any{"(x", &SentSplit{Left: "(x", Delimiter: ")", Right: ""}, ""},
+			[]SentPart{{Text: "(x"}, {Split: &SentSplit{Left: "(x", Delimiter: ")", Right: ""}}, {Text: ""}},
 		},
 	}
 	for _, tc := range cases {
@@ -129,7 +128,7 @@ func TestSentSplit_bufferTokens(t *testing.T) {
 
 func TestSentSplitterParts_noDelimiter(t *testing.T) {
 	got := SentSplitterParts("hello", DefaultWindow)
-	want := []any{"hello"}
+	want := []SentPart{{Text: "hello"}}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %#v want %#v", got, want)
 	}

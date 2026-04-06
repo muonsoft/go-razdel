@@ -3,25 +3,16 @@ package sentenize
 import "strings"
 
 // Segment merges SentSplitterParts using join(s): true means upstream JOIN (merge buffer + delimiter + right).
-// parts must follow [string, *SentSplit, string, *SentSplit, ... string]. Buffer is set on each split like upstream.
-func Segment(parts []any, join func(*SentSplit) bool) []string {
+// parts must follow [text, split, text, split, ... text]. Buffer is set on each split like upstream.
+func Segment(parts []SentPart, join func(*SentSplit) bool) []string {
 	if len(parts) == 0 {
 		return nil
 	}
-	buf, ok := parts[0].(string)
-	if !ok {
-		return nil
-	}
+	buf := parts[0].Text
 	var out []string
 	for i := 1; i+1 < len(parts); i += 2 {
-		sp, ok := parts[i].(*SentSplit)
-		if !ok {
-			return nil
-		}
-		right, ok := parts[i+1].(string)
-		if !ok {
-			return nil
-		}
+		sp := parts[i].Split
+		right := parts[i+1].Text
 		bufCopy := buf
 		sp.Buffer = &bufCopy
 		if join(sp) {
