@@ -45,10 +45,10 @@ func RuleLowerRight(s *SentSplit) bool {
 // RuleDelimiterRight mirrors upstream delimiter_right.
 func RuleDelimiterRight(s *SentSplit) bool {
 	right := s.RightToken()
-	if strings.Contains(genericQuotes, right) {
+	if strings.Contains(GenericQuotes, right) {
 		return false
 	}
-	if strings.Contains(delimiters, right) {
+	if strings.Contains(Delimiters, right) {
 		return true
 	}
 	return smilePrefixRE.MatchString(s.Right)
