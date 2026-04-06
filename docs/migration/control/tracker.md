@@ -30,11 +30,11 @@
 | T015 | Sentenizer bullet and dash rules | T012 | Done | списки/тире-диалог parity |
 | T016 | Sentenizer unit parity and post-processing API parity | T013,T014,T015 | Done | unit parity + `strip()` + API-контракты соблюдены |
 | T017 | Sentenizer integration corpus suite | T016,T002 | Done | quick/full corpus режимы для sentenize |
-| T018 | Differential/fuzz/benchmark hardening | T010,T017 | Planned | differential + fuzz + benchmark внедрены |
+| T018 | Differential/fuzz/benchmark hardening | T010,T017 | Done | differential + fuzz + benchmark внедрены |
 
 ## Release gate checklist
 
-- [ ] Все задачи `T001-T018` в статусе `Done`.
+- [x] Все задачи `T001-T018` в статусе `Done`.
 - [ ] `go test ./...` стабилен.
 - [ ] `go vet ./...` стабилен.
 - [ ] `golangci-lint run ./...` стабилен.

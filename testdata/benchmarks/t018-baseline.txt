@@ -1,0 +1,15 @@
+# T018 benchmark snapshot (informal baseline; numbers vary by CPU/OS)
+#
+# Regenerate:
+#   go test -bench 'BenchmarkTokenize|BenchmarkSentenize' -benchmem -count=5 .
+#
+# Example single run (linux/amd64, Go 1.25):
+#
+# BenchmarkTokenize/short_ASCII-32           887984    1427 ns/op    30.84 MB/s    4984 B/op    35 allocs/op
+# BenchmarkTokenize/long_Cyrillic-32         204060    6108 ns/op    78.09 MB/s   18232 B/op   101 allocs/op
+# BenchmarkTokenize/punct_heavy-32            5370  222871 ns/op    14.36 MB/s 1006646 B/op  5312 allocs/op
+# BenchmarkTokenize/unicode_mixed-32          42510   28224 ns/op    65.19 MB/s   93208 B/op   583 allocs/op
+# BenchmarkSentenize/short_ASCII-32          170256    7018 ns/op     2.99 MB/s    2241 B/op    61 allocs/op
+# BenchmarkSentenize/long_Cyrillic-32         58101   20368 ns/op    23.42 MB/s   10102 B/op    89 allocs/op
+# BenchmarkSentenize/punct_heavy-32             309 3942871 ns/op     0.81 MB/s 12013439 B/op  9679 allocs/op
+# BenchmarkSentenize/unicode_mixed-32          7194  176473 ns/op    10.43 MB/s  221935 B/op   483 allocs/op

@@ -47,3 +47,24 @@ RAZDEL_SENTENIZE_INTEGRATION_FULL=1 go test ./internal/sentenize/ -run TestInteg
 Set `RAZDEL_SENTENIZE_INTEGRATION_FULL=1` to enable; any other value (or unset) skips the full test.
 
 The full run compares sentence texts from `razdel.Sentenize` to the **partition etalon** in `sents.txt` (same contract as upstream `test_sentenize.test_int`). If the pinned submodule ever contains lines where the file disagrees with `razdel.segmenters.sentenize` on the same text, list those partition strings in `internal/sentenize/upstream_sents_txt_drift_test.go` (same pattern as tokenizer drift). With the current pin, the drift set is empty.
+
+## Differential vs Python, fuzz, benchmarks (T018)
+
+**Differential (optional):** `TestDifferential_*_vsPython_quickSample` in the root module compares Go token/sentence **text** sequences to `razdel.tokenize` / `razdel.sentenize` on the same quick corpus inputs. Requires `python3`, an initialized `third_party/razdel` submodule, and a working `PYTHONPATH` to that tree (the test sets it automatically). If `python3` is missing or `import razdel` fails, tests **skip** with a reason. Set `RAZDEL_DIFFERENTIAL_PYTHON=0` to force skip.
+
+Driver script: `testdata/python/razdel_diff_runner.py`.
+
+**Fuzz:** native targets `FuzzTokenize` and `FuzzSentenize` (package `github.com/muonsoft/go-razdel` tests). Only valid UTF-8 inputs are exercised; they assert offset invariants via `internal/testkit`. Example local run:
+
+```bash
+go test -fuzz=FuzzTokenize  -fuzztime=30s .
+go test -fuzz=FuzzSentenize -fuzztime=30s .
+```
+
+**Benchmarks:** `BenchmarkTokenize` / `BenchmarkSentenize` in the root module (short ASCII, long Cyrillic, punctuation-heavy, Unicode-heavy strings). Example:
+
+```bash
+go test -bench 'BenchmarkTokenize|BenchmarkSentenize' -benchmem .
+```
+
+Informal numbers from one machine are kept in `testdata/benchmarks/t018-baseline.txt` for reference; re-run the command there after meaningful performance work.
