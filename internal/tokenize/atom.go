@@ -28,10 +28,12 @@ func (a Atom) Normal() string {
 	return strings.ToLower(a.Text)
 }
 
+// punctLookup is pre-computed from PunctSet for O(1) rune membership in Atomize.
+var punctLookup = makePunctLookup()
+
 // Atomize scans text into atoms using the same classification order as upstream ATOM regex.
 func Atomize(text string) []Atom {
-	punct := makePunctLookup()
-	var out []Atom
+	out := make([]Atom, 0, len(text)/4+1)
 	for i := 0; i < len(text); {
 		r, w := utf8.DecodeRuneInString(text[i:])
 		// Upstream ATOM.finditer never yields atoms for whitespace gaps (only \S via OTHER).
@@ -91,7 +93,7 @@ func Atomize(text string) []Atom {
 			i = j
 			continue
 		}
-		if punct[r] {
+		if punctLookup[r] {
 			out = append(out, Atom{Start: start, Stop: i + w, Type: PUNCT, Text: text[start : i+w]})
 			i += w
 			continue

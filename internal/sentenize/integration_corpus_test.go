@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -21,7 +20,7 @@ import (
 const envSentenizeIntegrationFull = "RAZDEL_SENTENIZE_INTEGRATION_FULL"
 
 func TestIntegration_sentenize_quick_corpus(t *testing.T) {
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "testdata", "upstream", "quick_sents_sample.txt")
 	runSentenizeCorpus(t, path, "quick", true)
 }
@@ -30,7 +29,7 @@ func TestIntegration_sentenize_full_corpus(t *testing.T) {
 	if os.Getenv(envSentenizeIntegrationFull) != "1" {
 		t.Skipf("full corpus: set %s=1 (see testdata/upstream/README.md)", envSentenizeIntegrationFull)
 	}
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "third_party", "razdel", "razdel", "tests", "data", "sents.txt")
 	if _, err := os.Stat(path); err != nil {
 		t.Skip("sents.txt not available:", err)
@@ -67,7 +66,7 @@ func runSentenizeCorpus(t *testing.T, path, mode string, subtests bool) {
 	var mismatches []corpusMismatch
 	var skippedDrift int
 	for i, p := range parts {
-		lineKey := partitionLineKey(p)
+		lineKey := fixture.PartitionLineKey(p)
 		if _, drift := upstreamSentsTxtPartitionDrift[lineKey]; drift {
 			skippedDrift++
 			continue
@@ -156,46 +155,8 @@ func formatCorpusMismatchContext(mode, path string, index, total int, p fixture.
 			"case: %d/%d\n"+
 			"upstream: third_party/razdel/razdel/tests/test_sentenize.py test_int / int_tests\n"+
 			"partition line: %s",
-		mode, path, index, total, formatPartitionLineForLog(p),
+		mode, path, index, total, fixture.FormatPartitionLine(p),
 	)
-}
-
-func formatPartitionLineForLog(p fixture.Partition) string {
-	if len(p.Chunks) == 1 && p.Chunks[0] == "" {
-		return "<empty partition>"
-	}
-	const maxLen = 240
-	s := strings.Join(p.Chunks, "|")
-	if len(s) <= maxLen {
-		return s
-	}
-	return s[:maxLen] + "…"
-}
-
-// partitionLineKey matches the raw line in sents.txt for a parsed partition (same as strings.Join(chunks, "|")).
-func partitionLineKey(p fixture.Partition) string {
-	if len(p.Chunks) == 1 && p.Chunks[0] == "" {
-		return fixture.EmptyPartitionMarker
-	}
-	return strings.Join(p.Chunks, "|")
-}
-
-func moduleRoot(t *testing.T) string {
-	t.Helper()
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for {
-		if _, err := os.Stat(filepath.Join(wd, "go.mod")); err == nil {
-			return wd
-		}
-		parent := filepath.Dir(wd)
-		if parent == wd {
-			t.Fatal("go.mod not found when walking up from", wd)
-		}
-		wd = parent
-	}
 }
 
 // documentUpstreamDriftSkips emits one skipped subtest per known drift line so -v output and

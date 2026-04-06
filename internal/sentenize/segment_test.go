@@ -37,7 +37,7 @@ func TestSegment_trivialParity(t *testing.T) {
 }
 
 func TestSegment_singleChunk(t *testing.T) {
-	parts := []any{"hello"}
+	parts := []SentPart{{Text: "hello"}}
 	got := PostStrip(Segment(parts, JoinTrivial))
 	if !reflect.DeepEqual(got, []string{"hello"}) {
 		t.Fatalf("got %#v", got)

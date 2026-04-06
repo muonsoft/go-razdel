@@ -227,32 +227,25 @@ func joinSplit(s *tokenSplit) bool {
 	return false
 }
 
-// SegmentStrings applies upstream TokenSegmenter.segment to the interleaved
-// split/text stream from TokenSplitter.__call__.
-func SegmentStrings(parts []any) []string {
+// tokenPart is one element of the interleaved stream from TokenSplitter.__call__:
+// either a text chunk (split == nil) or a split point (split != nil).
+type tokenPart struct {
+	text  string
+	split *tokenSplit
+}
+
+// segmentStrings applies upstream TokenSegmenter.segment to the interleaved
+// split/text stream from tokenSplitterParts.
+func segmentStrings(parts []tokenPart) []string {
 	if len(parts) == 0 {
 		return nil
 	}
-	buffer, ok := parts[0].(string)
-	if !ok {
-		panic("tokenize: invalid parts stream (first element is not string)")
-	}
+	buffer := parts[0].text
 	var out []string
 	for i := 1; i < len(parts); i += 2 {
-		sp, ok := parts[i].(*tokenSplit)
-		if !ok {
-			panic("tokenize: invalid parts stream (split element has wrong type)")
-		}
-		if i+1 >= len(parts) {
-			panic("tokenize: invalid parts stream (missing right text element)")
-		}
-		right, ok := parts[i+1].(string)
-		if !ok {
-			panic("tokenize: invalid parts stream (right text element has wrong type)")
-		}
+		sp := parts[i].split
+		right := parts[i+1].text
 		sp.buffer = buffer
-		// TokenSegmenter.segment: shouldJoin applies split_space first (non-empty delimiter
-		// => split), then join rules only when delimiter is empty. See tokenize.py.
 		if shouldJoin(sp) {
 			buffer += right
 		} else {
@@ -266,13 +259,13 @@ func SegmentStrings(parts []any) []string {
 
 const window = 3
 
-// TokenSplitterParts builds the interleaved []*tokenSplit, text, ... stream (upstream TokenSplitter.__call__).
-func TokenSplitterParts(text string, atoms []Atom) []any {
+// tokenSplitterParts builds the interleaved text/split/text stream (upstream TokenSplitter.__call__).
+func tokenSplitterParts(text string, atoms []Atom) []tokenPart {
 	if len(atoms) == 0 {
 		return nil
 	}
-	parts := make([]any, 0, len(atoms)*2)
-	parts = append(parts, atoms[0].Text)
+	parts := make([]tokenPart, 0, len(atoms)*2)
+	parts = append(parts, tokenPart{text: atoms[0].Text})
 	for i := 1; i < len(atoms); i++ {
 		prev := atoms[i-1]
 		cur := atoms[i]
@@ -287,8 +280,8 @@ func TokenSplitterParts(text string, atoms []Atom) []any {
 			hi = len(atoms)
 		}
 		right := atoms[i:hi]
-		parts = append(parts, &tokenSplit{leftAtoms: left, rightAtoms: right, Delimiter: delim})
-		parts = append(parts, atoms[i].Text)
+		parts = append(parts, tokenPart{split: &tokenSplit{leftAtoms: left, rightAtoms: right, Delimiter: delim}})
+		parts = append(parts, tokenPart{text: atoms[i].Text})
 	}
 	return parts
 }
@@ -299,8 +292,8 @@ func TokenTexts(text string) []string {
 	if len(atoms) == 0 {
 		return nil
 	}
-	parts := TokenSplitterParts(text, atoms)
-	return SegmentStrings(parts)
+	parts := tokenSplitterParts(text, atoms)
+	return segmentStrings(parts)
 }
 
 // TokenSpans returns (start, end) byte offsets for each token, matching upstream find_substrings.
@@ -312,11 +305,11 @@ func TokenSpans(text string) [][2]int {
 	out := make([][2]int, 0, len(chunks))
 	offset := 0
 	for _, chunk := range chunks {
-		start := strings.Index(text[offset:], chunk)
-		if start < 0 {
-			panic("tokenize: failed to map chunk to source text")
+		idx := strings.Index(text[offset:], chunk)
+		if idx < 0 {
+			panic("tokenize: TokenSpans: chunk not found at expected offset (internal inconsistency)")
 		}
-		start += offset
+		start := offset + idx
 		end := start + len(chunk)
 		out = append(out, [2]int{start, end})
 		offset = end

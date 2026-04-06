@@ -63,7 +63,10 @@ func Sentenize(text string) []Sentence {
 	chunks := sentenize.PostStrip(raw)
 	spans := sentenize.ByteSpans(text, chunks)
 	out := make([]Sentence, 0, len(spans))
-	for _, sp := range spans {
+	for i, sp := range spans {
+		if chunks[i] == "" {
+			continue
+		}
 		start, end := sp[0], sp[1]
 		out = append(out, Sentence{
 			Span: Span{Start: start, End: end},

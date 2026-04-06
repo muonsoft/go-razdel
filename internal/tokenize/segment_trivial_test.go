@@ -45,13 +45,3 @@ func TestTokenTexts_trivialSplit_punctuationThenSpace(t *testing.T) {
 		t.Fatalf("TokenSpans: got %#v, want %#v", spans, wantSpans)
 	}
 }
-
-func TestSegmentStrings_panicsOnInvalidSplitStream(t *testing.T) {
-	t.Parallel()
-	defer func() {
-		if recover() == nil {
-			t.Fatal("expected panic for invalid split stream")
-		}
-	}()
-	_ = tokenize.SegmentStrings([]any{"left", 42, "right"})
-}

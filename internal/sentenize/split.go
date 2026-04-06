@@ -154,10 +154,17 @@ func runeSuffixAfter(s string, startByte, maxRunes int) string {
 	return string(runes[:maxRunes])
 }
 
-// SentSplitterParts returns the interleaved []any stream from upstream SentSplitter.__call__:
-// string chunks and *SentSplit events. Window is in Unicode code points (Python str slice).
+// SentPart is one element of the interleaved stream from SentSplitter.__call__:
+// either a text chunk (Split == nil) or a split point (Split != nil).
+type SentPart struct {
+	Text  string
+	Split *SentSplit
+}
+
+// SentSplitterParts returns the interleaved stream from upstream SentSplitter.__call__:
+// text chunks and *SentSplit events. Window is in Unicode code points (Python str slice).
 // For whitespace-only input, returns nil (upstream yields nothing).
-func SentSplitterParts(text string, window int) []any {
+func SentSplitterParts(text string, window int) []SentPart {
 	if onlyWhitespace(text) {
 		return nil
 	}
@@ -166,21 +173,21 @@ func SentSplitterParts(text string, window int) []any {
 	}
 	idx := delimiterRE.FindAllStringIndex(text, -1)
 	if len(idx) == 0 {
-		return []any{text}
+		return []SentPart{{Text: text}}
 	}
-	out := make([]any, 0, len(idx)*2+1)
+	out := make([]SentPart, 0, len(idx)*2+1)
 	prev := 0
 	for _, loc := range idx {
 		start, stop := loc[0], loc[1]
 		delim := text[start:stop]
-		out = append(out, text[prev:start])
-		out = append(out, &SentSplit{
+		out = append(out, SentPart{Text: text[prev:start]})
+		out = append(out, SentPart{Split: &SentSplit{
 			Left:      runePrefixBefore(text, start, window),
 			Delimiter: delim,
 			Right:     runeSuffixAfter(text, stop, window),
-		})
+		}})
 		prev = stop
 	}
-	out = append(out, text[prev:])
+	out = append(out, SentPart{Text: text[prev:]})
 	return out
 }
