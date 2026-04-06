@@ -13,10 +13,7 @@ func ByteSpans(text string, chunks []string) [][2]int {
 		}
 		idx := strings.Index(text[offset:], chunk)
 		if idx < 0 {
-			idx = strings.Index(text, chunk)
-			if idx < 0 {
-				continue
-			}
+			panic("sentenize: chunk not found in source text from current offset")
 		}
 		start := offset + idx
 		end := start + len(chunk)

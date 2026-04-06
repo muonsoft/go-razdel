@@ -56,3 +56,14 @@ func TestByteSpans_roundTrip(t *testing.T) {
 		t.Fatalf("spans=%v texts=%q %q", spans, text[spans[0][0]:spans[0][1]], text[spans[1][0]:spans[1][1]])
 	}
 }
+
+func TestByteSpans_panicsWhenChunkNotFound(t *testing.T) {
+	text := "ab"
+	chunks := []string{"a", "missing"}
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic when chunk is not found")
+		}
+	}()
+	_ = ByteSpans(text, chunks)
+}

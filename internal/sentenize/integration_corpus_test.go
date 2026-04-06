@@ -77,7 +77,7 @@ func runSentenizeCorpus(t *testing.T, path, mode string, subtests bool) {
 		for _, seg := range p.ExpectedSegments() {
 			want = append(want, seg.Text)
 		}
-		got := sentenceTexts(input)
+		got := sentenceTexts(t, input)
 		if slices.Equal(want, got) {
 			continue
 		}
@@ -126,8 +126,10 @@ type corpusMismatch struct {
 	want, got    []string
 }
 
-func sentenceTexts(text string) []string {
+func sentenceTexts(t *testing.T, text string) []string {
+	t.Helper()
 	sents := razdel.Sentenize(text)
+	testkit.AssertSentenceOffsetContract(t, text, sents)
 	out := make([]string, len(sents))
 	for i, s := range sents {
 		out[i] = s.Text
@@ -142,7 +144,7 @@ func assertPartitionSentenize(t *testing.T, mode, path string, index, total int,
 	for _, seg := range p.ExpectedSegments() {
 		want = append(want, seg.Text)
 	}
-	got := sentenceTexts(input)
+	got := sentenceTexts(t, input)
 	ctx := formatCorpusMismatchContext(mode, path, index, total, p)
 	testkit.AssertStringSliceEqual(t, want, got, ctx)
 }
