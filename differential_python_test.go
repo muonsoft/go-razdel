@@ -2,6 +2,7 @@ package razdel_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/muonsoft/go-razdel"
 	"github.com/muonsoft/go-razdel/internal/fixture"
@@ -17,6 +19,7 @@ import (
 
 // envRazdelDifferentialPython disables differential runs when set to "0".
 const envRazdelDifferentialPython = "RAZDEL_DIFFERENTIAL_PYTHON"
+const pyDiffCommandTimeout = 20 * time.Second
 
 type pyDiffCase struct {
 	Mode string `json:"mode"`
@@ -35,6 +38,7 @@ var (
 	pyDiffOnce   sync.Once
 	pyDiffOK     bool
 	pyDiffReason string
+	pyDiffPython string
 )
 
 func pythonDifferentialReady(root string) (ok bool, reason string) {
@@ -48,15 +52,22 @@ func pythonDifferentialReady(root string) (ok bool, reason string) {
 			pyDiffReason = "python3 not in PATH"
 			return
 		}
+		pyDiffPython = py
 		razdelRoot := filepath.Join(root, "third_party", "razdel")
 		if _, err := os.Stat(filepath.Join(razdelRoot, "razdel", "__init__.py")); err != nil {
 			pyDiffReason = "third_party/razdel submodule not checked out"
 			return
 		}
-		cmd := exec.Command(py, "-c", "import razdel")
-		cmd.Env = append(os.Environ(), "PYTHONPATH="+razdelRoot)
+		ctx, cancel := context.WithTimeout(context.Background(), pyDiffCommandTimeout)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, pyDiffPython, "-c", "import razdel")
+		cmd.Env = append(os.Environ(), "PYTHONPATH="+pythonPathEnv(root))
 		cmd.Dir = root
 		if err := cmd.Run(); err != nil {
+			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+				pyDiffReason = "python import readiness check timed out"
+				return
+			}
 			pyDiffReason = "cannot import razdel with PYTHONPATH=" + razdelRoot + ": " + err.Error()
 			return
 		}
@@ -67,6 +78,9 @@ func pythonDifferentialReady(root string) (ok bool, reason string) {
 
 func runPythonDiffBatch(t *testing.T, root string, cases []pyDiffCase) [][]string {
 	t.Helper()
+	if pyDiffPython == "" {
+		t.Fatal("python binary is not initialized")
+	}
 	script := filepath.Join(root, "testdata", "python", "razdel_diff_runner.py")
 	if _, err := os.Stat(script); err != nil {
 		t.Fatalf("diff runner script: %v", err)
@@ -75,14 +89,19 @@ func runPythonDiffBatch(t *testing.T, root string, cases []pyDiffCase) [][]strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("python3", script)
+	ctx, cancel := context.WithTimeout(context.Background(), pyDiffCommandTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, pyDiffPython, script)
 	cmd.Dir = root
-	cmd.Env = append(os.Environ(), "PYTHONPATH="+filepath.Join(root, "third_party", "razdel"))
+	cmd.Env = append(os.Environ(), "PYTHONPATH="+pythonPathEnv(root))
 	cmd.Stdin = bytes.NewReader(body)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			t.Fatalf("python diff runner timed out after %s", pyDiffCommandTimeout)
+		}
 		var ee *exec.ExitError
 		if errors.As(err, &ee) {
 			t.Fatalf("python diff runner: %v\nstderr:\n%s", err, stderr.String())
@@ -91,12 +110,20 @@ func runPythonDiffBatch(t *testing.T, root string, cases []pyDiffCase) [][]strin
 	}
 	var resp pyDiffBatchResponse
 	if err := json.Unmarshal(stdout.Bytes(), &resp); err != nil {
-		t.Fatalf("decode python stdout: %v\nraw:\n%s", err, stdout.String())
+		t.Fatalf("decode python stdout: %v\nstdout:\n%s\nstderr:\n%s", err, stdout.String(), stderr.String())
 	}
 	if len(resp.Results) != len(cases) {
 		t.Fatalf("python returned %d results, want %d", len(resp.Results), len(cases))
 	}
 	return resp.Results
+}
+
+func pythonPathEnv(root string) string {
+	razdelRoot := filepath.Join(root, "third_party", "razdel")
+	if current := os.Getenv("PYTHONPATH"); current != "" {
+		return razdelRoot + string(os.PathListSeparator) + current
+	}
+	return razdelRoot
 }
 
 func loadPartitionTexts(t *testing.T, root, rel string) []string {
