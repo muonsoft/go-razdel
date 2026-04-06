@@ -233,14 +233,23 @@ func SegmentStrings(parts []any) []string {
 	if len(parts) == 0 {
 		return nil
 	}
-	buffer, _ := parts[0].(string)
+	buffer, ok := parts[0].(string)
+	if !ok {
+		panic("tokenize: invalid parts stream (first element is not string)")
+	}
 	var out []string
 	for i := 1; i < len(parts); i += 2 {
 		sp, ok := parts[i].(*tokenSplit)
 		if !ok {
-			break
+			panic("tokenize: invalid parts stream (split element has wrong type)")
 		}
-		right, _ := parts[i+1].(string)
+		if i+1 >= len(parts) {
+			panic("tokenize: invalid parts stream (missing right text element)")
+		}
+		right, ok := parts[i+1].(string)
+		if !ok {
+			panic("tokenize: invalid parts stream (right text element has wrong type)")
+		}
 		sp.buffer = buffer
 		// TokenSegmenter.segment: shouldJoin applies split_space first (non-empty delimiter
 		// => split), then join rules only when delimiter is empty. See tokenize.py.
@@ -305,11 +314,7 @@ func TokenSpans(text string) [][2]int {
 	for _, chunk := range chunks {
 		start := strings.Index(text[offset:], chunk)
 		if start < 0 {
-			// Should not happen for well-formed tokenizer output.
-			start = strings.Index(text, chunk)
-			if start < 0 {
-				continue
-			}
+			panic("tokenize: failed to map chunk to source text")
 		}
 		start += offset
 		end := start + len(chunk)
