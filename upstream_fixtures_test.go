@@ -7,11 +7,12 @@ import (
 	"testing"
 
 	"github.com/muonsoft/go-razdel/internal/fixture"
+	"github.com/muonsoft/go-razdel/internal/testkit"
 )
 
 func TestUpstreamQuickSamples_loadAndParse(t *testing.T) {
 	t.Parallel()
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	for _, name := range []string{
 		"testdata/upstream/quick_tokens_sample.txt",
 		"testdata/upstream/quick_sents_sample.txt",
@@ -44,27 +45,9 @@ func TestUpstreamQuickSamples_loadAndParse(t *testing.T) {
 	}
 }
 
-func moduleRoot(tb testing.TB) string {
-	tb.Helper()
-	dir, err := os.Getwd()
-	if err != nil {
-		tb.Fatal(err)
-	}
-	for {
-		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			return dir
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			tb.Fatal("go.mod not found")
-		}
-		dir = parent
-	}
-}
-
 func TestUpstreamMETA_documentsSubmodule(t *testing.T) {
 	t.Parallel()
-	path := filepath.Join(moduleRoot(t), "testdata", "upstream", "META.txt")
+	path := filepath.Join(testkit.ModuleRoot(t), "testdata", "upstream", "META.txt")
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)

@@ -3,7 +3,6 @@ package tokenize_test
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/muonsoft/go-razdel"
@@ -33,7 +32,7 @@ var upstreamUnitTokenizeNames = []string{
 
 func TestUpstream_UNIT_tokenize_partitions(t *testing.T) {
 	t.Parallel()
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "testdata", "upstream", "unit_tokenize.txt")
 	raw, err := os.ReadFile(path)
 	if err != nil {
@@ -58,7 +57,7 @@ func TestUpstream_UNIT_tokenize_partitions(t *testing.T) {
 			ctx := "internal/tokenize.TokenTexts parity\n" +
 				"upstream: third_party/razdel/razdel/tests/test_tokenize.py UNIT\n" +
 				"fixture: testdata/upstream/unit_tokenize.txt\n" +
-				"partition line: " + formatPartitionLineForLog(p)
+				"partition line: " + fixture.FormatPartitionLine(p)
 			testkit.AssertStringSliceEqual(t, want, got, ctx)
 			if len(input) == 0 {
 				if got != nil {
@@ -75,15 +74,8 @@ func TestUpstream_UNIT_tokenize_partitions(t *testing.T) {
 				gotTexts = append(gotTexts, tok.Text)
 			}
 			testkit.AssertStringSliceEqual(t, want, gotTexts,
-				"razdel.Tokenize must match partition expectation\npartition line: "+formatPartitionLineForLog(p))
+				"razdel.Tokenize must match partition expectation\npartition line: "+fixture.FormatPartitionLine(p))
 			testkit.AssertTokenOffsetContract(t, input, toks)
 		})
 	}
-}
-
-func formatPartitionLineForLog(p fixture.Partition) string {
-	if len(p.Chunks) == 1 && p.Chunks[0] == "" {
-		return fixture.EmptyPartitionMarker
-	}
-	return strings.Join(p.Chunks, "|")
 }

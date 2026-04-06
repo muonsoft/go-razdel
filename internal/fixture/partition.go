@@ -61,6 +61,27 @@ func ParsePartitionLine(line string) Partition {
 	return Partition{Chunks: strings.Split(line, "|")}
 }
 
+// PartitionLineKey returns the canonical key for a partition as it would appear in a corpus file.
+func PartitionLineKey(p Partition) string {
+	if len(p.Chunks) == 1 && p.Chunks[0] == "" {
+		return EmptyPartitionMarker
+	}
+	return strings.Join(p.Chunks, "|")
+}
+
+// FormatPartitionLine formats a partition for log output, truncating long lines.
+func FormatPartitionLine(p Partition) string {
+	if len(p.Chunks) == 1 && p.Chunks[0] == "" {
+		return EmptyPartitionMarker
+	}
+	const maxLen = 240
+	s := strings.Join(p.Chunks, "|")
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen] + "…"
+}
+
 // ParsePartitionLines parses newline-separated partition records. Blank lines are skipped.
 // A line exactly equal to EmptyPartitionMarker denotes an empty partition (one fill chunk).
 func ParsePartitionLines(content string) []Partition {

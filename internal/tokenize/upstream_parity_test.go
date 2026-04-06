@@ -10,26 +10,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/muonsoft/go-razdel/internal/testkit"
 	"github.com/muonsoft/go-razdel/internal/tokenize"
 )
-
-func moduleRoot(t *testing.T) string {
-	t.Helper()
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for {
-		if _, err := os.Stat(filepath.Join(wd, "go.mod")); err == nil {
-			return wd
-		}
-		parent := filepath.Dir(wd)
-		if parent == wd {
-			t.Fatal("go.mod not found when walking up from", wd)
-		}
-		wd = parent
-	}
-}
 
 func upstreamTokenTexts(t *testing.T, razdelRoot, input string) []string {
 	t.Helper()
@@ -57,7 +40,7 @@ print(json.dumps([x.text for x in tokenize(s)], ensure_ascii=False))
 
 func TestUpstream_tokenTexts_parity(t *testing.T) {
 	t.Parallel()
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	razdelRoot := filepath.Join(root, "third_party", "razdel")
 	if _, err := os.Stat(filepath.Join(razdelRoot, "razdel", "segmenters", "tokenize.py")); err != nil {
 		t.Skip("third_party/razdel not present:", err)
@@ -98,7 +81,7 @@ func TestTokenSpans_ascii_matchesPythonCodeUnitIndices(t *testing.T) {
 	t.Parallel()
 	// Upstream find_substrings uses Python str indices (code units = runes for BMP text).
 	// For pure ASCII, those match UTF-8 byte offsets (docs/contracts.md Variant A).
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	razdelRoot := filepath.Join(root, "third_party", "razdel")
 	if _, err := os.Stat(filepath.Join(razdelRoot, "razdel", "segmenters", "tokenize.py")); err != nil {
 		t.Skip("third_party/razdel not present:", err)

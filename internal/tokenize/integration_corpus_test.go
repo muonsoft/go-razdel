@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -21,7 +20,7 @@ import (
 const envTokenizeIntegrationFull = "RAZDEL_TOKENIZE_INTEGRATION_FULL"
 
 func TestIntegration_tokenize_quick_corpus(t *testing.T) {
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "testdata", "upstream", "quick_tokens_sample.txt")
 	runTokenizeCorpus(t, path, "quick", true)
 }
@@ -30,7 +29,7 @@ func TestIntegration_tokenize_full_corpus(t *testing.T) {
 	if os.Getenv(envTokenizeIntegrationFull) != "1" {
 		t.Skipf("full corpus: set %s=1 (see testdata/upstream/README.md)", envTokenizeIntegrationFull)
 	}
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "third_party", "razdel", "razdel", "tests", "data", "tokens.txt")
 	if _, err := os.Stat(path); err != nil {
 		t.Skip("tokens.txt not available:", err)
@@ -67,7 +66,7 @@ func runTokenizeCorpus(t *testing.T, path, mode string, subtests bool) {
 	var mismatches []corpusMismatch
 	var skippedDrift int
 	for i, p := range parts {
-		lineKey := partitionLineKey(p)
+		lineKey := fixture.PartitionLineKey(p)
 		if _, drift := upstreamTokensTxtPartitionDrift[lineKey]; drift {
 			skippedDrift++
 			continue
@@ -145,16 +144,8 @@ func formatCorpusMismatchContext(mode, path string, index, total int, p fixture.
 			"case: %d/%d\n"+
 			"upstream: third_party/razdel/razdel/tests/test_tokenize.py test_int / int_tests\n"+
 			"partition line: %s",
-		mode, path, index, total, formatPartitionLineForLog(p),
+		mode, path, index, total, fixture.FormatPartitionLine(p),
 	)
-}
-
-// partitionLineKey matches the raw line in tokens.txt for a parsed partition (same as strings.Join(chunks, "|")).
-func partitionLineKey(p fixture.Partition) string {
-	if len(p.Chunks) == 1 && p.Chunks[0] == "" {
-		return fixture.EmptyPartitionMarker
-	}
-	return strings.Join(p.Chunks, "|")
 }
 
 // documentUpstreamDriftSkips emits one skipped subtest per known drift line so -v output and

@@ -132,7 +132,7 @@ func goSentenceTexts(s string) []string {
 }
 
 func TestDifferential_tokenize_vsPython_quickSample(t *testing.T) {
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	ok, why := pythonDifferentialReady(root)
 	if !ok {
 		t.Skip("differential vs Python:", why)
@@ -159,7 +159,7 @@ func TestDifferential_tokenize_vsPython_quickSample(t *testing.T) {
 }
 
 func TestDifferential_sentenize_vsPython_quickSample(t *testing.T) {
-	root := moduleRoot(t)
+	root := testkit.ModuleRoot(t)
 	ok, why := pythonDifferentialReady(root)
 	if !ok {
 		t.Skip("differential vs Python:", why)

@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/muonsoft/go-razdel/internal/testkit"
 )
 
 func TestIsFill(t *testing.T) {
@@ -43,7 +45,7 @@ func TestParsePartitionLines_emptyMarker(t *testing.T) {
 
 func TestExpectedSegments_tokenizeUnitFile(t *testing.T) {
 	t.Parallel()
-	root := findRepoRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "testdata", "upstream", "unit_tokenize.txt")
 	raw, err := os.ReadFile(path)
 	if err != nil {
@@ -80,7 +82,7 @@ func TestExpectedSegments_tokenizeUnitFile(t *testing.T) {
 
 func TestExpectedSegments_sentenizeUnitFile(t *testing.T) {
 	t.Parallel()
-	root := findRepoRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "testdata", "upstream", "unit_sentenize.txt")
 	raw, err := os.ReadFile(path)
 	if err != nil {
@@ -111,27 +113,9 @@ func TestExpectedSegments_sentenizeUnitFile(t *testing.T) {
 	}
 }
 
-func findRepoRoot(tb testing.TB) string {
-	tb.Helper()
-	dir, err := os.Getwd()
-	if err != nil {
-		tb.Fatal(err)
-	}
-	for {
-		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			return dir
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			tb.Fatal("go.mod not found from cwd")
-		}
-		dir = parent
-	}
-}
-
 func TestSampleLines_reproducible(t *testing.T) {
 	t.Parallel()
-	root := findRepoRoot(t)
+	root := testkit.ModuleRoot(t)
 	path := filepath.Join(root, "third_party", "razdel", "razdel", "tests", "data", "tokens.txt")
 	f, err := os.Open(path)
 	if err != nil {
@@ -160,7 +144,7 @@ func TestSampleLines_reproducible(t *testing.T) {
 
 func TestQuickSamples_matchGenerated(t *testing.T) {
 	t.Parallel()
-	root := findRepoRoot(t)
+	root := testkit.ModuleRoot(t)
 	tokensPath := filepath.Join(root, "testdata", "upstream", "quick_tokens_sample.txt")
 	sentsPath := filepath.Join(root, "testdata", "upstream", "quick_sents_sample.txt")
 	wantTok, err := os.ReadFile(tokensPath)
