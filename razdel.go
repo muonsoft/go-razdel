@@ -50,9 +50,10 @@ func Tokenize(text string) []Token {
 	return out
 }
 
-// Sentenize splits text into sentences using upstream sentenize.py rules through
-// close_bracket (trivial, sokr, close_quote, close_bracket). list_item and dash_right
-// are not applied yet (T015).
+// Sentenize splits text into sentences using upstream sentenize.py SentSegmenter rules
+// (including list_item and dash_right). Each sentence text is strings.TrimSpace on the
+// raw segment chunk, matching Python chunk.strip(); byte spans refer to the trimmed
+// slice in the original UTF-8 string (docs/contracts.md).
 func Sentenize(text string) []Sentence {
 	if strings.TrimSpace(text) == "" {
 		return nil

@@ -1,6 +1,7 @@
 package razdel_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/muonsoft/go-razdel"
@@ -37,6 +38,18 @@ func TestSentenize_emptyWhitespaceAndTrivial(t *testing.T) {
 	}
 	testkit.AssertSentenceOffsetContract(t, "  \n\t  ", ws)
 
+	// strings.TrimSpace strips the same class of Unicode spaces as Python str.strip() for common cases.
+	for _, s := range []string{"\u00a0", "\u2003\u2002\u2009", "\u1680\u2000"} {
+		if strings.TrimSpace(s) != "" {
+			t.Fatalf("precondition: TrimSpace(%q) should be empty", s)
+		}
+		got := razdel.Sentenize(s)
+		if len(got) != 0 {
+			t.Fatalf("unicode whitespace-only %q: want len 0, got %d (%#v)", s, len(got), got)
+		}
+		testkit.AssertSentenceOffsetContract(t, s, got)
+	}
+
 	src := "Привет."
 	got := razdel.Sentenize(src)
 	if len(got) != 1 || got[0].Text != src {
@@ -50,4 +63,9 @@ func TestSentenize_emptyWhitespaceAndTrivial(t *testing.T) {
 		t.Fatalf("got %#v want single sentence %q (upstream sentenize)", joined, "a. B")
 	}
 	testkit.AssertSentenceOffsetContract(t, "a. B", joined)
+
+	// Post-step strip: offsets must point at trimmed chunks inside the original string.
+	padded := "  Одно. Два.  "
+	padGot := razdel.Sentenize(padded)
+	testkit.AssertSentenceTextsEqual(t, padded, padGot, []string{"Одно.", "Два."})
 }
