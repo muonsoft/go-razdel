@@ -1,9 +1,14 @@
 package tokenize_test
 
 // upstreamTokensTxtPartitionDrift — partition-строки из
-// third_party/razdel/razdel/tests/data/tokens.txt, у которых эталон (несущие куски между «|»)
-// не совпадает с razdel.segmenters.tokenize на том же восстановленном тексте в закреплённом
-// submodule. Go совпадает с Python; расхождение только между строкой корпуса и кодом razdel.
+// third_party/razdel/razdel/tests/data/tokens.txt, которые полный корпусный тест не сравнивает
+// с tokenize.TokenTexts. Две причины:
+//
+// 1) Эталон в файле не совпадает с razdel.segmenters.tokenize на том же тексте (закреплённый
+// submodule; Go совпадает с Python; расхождение только между строкой корпуса и кодом razdel).
+//
+// 2) IGO-47: Go намеренно склеивает смайлы SMILE (lookahead), а Python и tokens.txt дают
+// отдельные пунктуационные токены.
 //
 // Полный корпусный тест пропускает эти строки (с записью в лог), чтобы остальные ~209k кейсов
 // оставались строгими. После обновления submodule пересоберите список (и уберите/допишите ключи).
@@ -33,4 +38,10 @@ var upstreamTokensTxtPartitionDrift = map[string]struct{}{
 	"{Сочи":           {},
 	"{К|1":            {},
 	"Гайос{":          {},
+	// IGO-47: smile lookahead vs tokens.txt / Python
+	":|-|)|)|)": {},
+	":|-|(":     {},
+	"O|:|-|)":   {},
+	":|-|)":     {},
+	";|-|)":     {},
 }

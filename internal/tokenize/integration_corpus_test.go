@@ -90,7 +90,7 @@ func runTokenizeCorpus(t *testing.T, path, mode string, subtests bool) {
 	}
 	elapsed := time.Since(start).Round(time.Millisecond)
 	if skippedDrift > 0 {
-		t.Logf("tokenizer integration (%s): skipped %d lines listed in upstream_tokens_txt_drift_test.go (tokens.txt etalon ≠ tokenize.py on same text in pinned submodule)",
+		t.Logf("tokenizer integration (%s): skipped %d lines listed in upstream_tokens_txt_drift_test.go (tokens.txt vs Python drift and/or IGO-47 smile drift)",
 			mode, skippedDrift)
 	}
 	if len(mismatches) == 0 {
@@ -160,7 +160,7 @@ func documentUpstreamDriftSkips(t *testing.T) {
 	for i, line := range keys {
 		i, line := i, line
 		t.Run(fmt.Sprintf("upstream_tokens_txt_drift_%02d", i+1), func(t *testing.T) {
-			t.Skipf("tokens.txt partition %q: file etalon != tokenize.py on same text in pinned submodule; Go matches Python (see upstream_tokens_txt_drift_test.go)", line)
+			t.Skipf("tokens.txt partition %q: excluded from corpus parity (see upstream_tokens_txt_drift_test.go)", line)
 		})
 	}
 }

@@ -45,6 +45,8 @@ func TestUpstream_tokenTexts_parity(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(razdelRoot, "razdel", "segmenters", "tokenize.py")); err != nil {
 		t.Skip("third_party/razdel not present:", err)
 	}
+	// :-) is intentionally not included: Go applies SMILE lookahead (IGO-47); pinned
+	// Python tokenize still splits into ":", "-", ")".
 	cases := []string{
 		"mβж",
 		"Δσ",
@@ -61,7 +63,6 @@ func TestUpstream_tokenTexts_parity(t *testing.T) {
 		"К_тому_же",
 		"yahoo!",
 		"...?!",
-		":-)",
 		"***",
 	}
 	for _, s := range cases {

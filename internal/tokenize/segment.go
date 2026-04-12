@@ -178,7 +178,13 @@ func punctRule(s *tokenSplit) int {
 	}
 	left := s.Left()
 	right := s.Right()
-	if smileRE.MatchString(s.buffer + right) {
+	combined := s.buffer + right
+	if smileRE.MatchString(combined) {
+		return join
+	}
+	// Lookahead: `:-)` / `;-)` need `:`/`;` + `-` joined before the closing `)`
+	// matches SMILE as a whole (upstream #17; Python tokenize still splits here).
+	if len(s.rightAtoms) >= 2 && smileRE.MatchString(combined+s.right2().Text) {
 		return join
 	}
 	if strings.ContainsAny(Endings, left) && strings.ContainsAny(Endings, right) {
@@ -194,9 +200,15 @@ func otherRule(s *tokenSplit) int {
 	l := s.left1().Type
 	r := s.right1().Type
 	if l == OTHER && (r == OTHER || r == RU || r == LAT) {
+		if otherShouldSplitEmojiFromWord(*s.left1(), *s.right1()) {
+			return 0
+		}
 		return join
 	}
 	if (l == OTHER || l == RU || l == LAT) && r == OTHER {
+		if otherShouldSplitEmojiFromWord(*s.left1(), *s.right1()) {
+			return 0
+		}
 		return join
 	}
 	return 0
