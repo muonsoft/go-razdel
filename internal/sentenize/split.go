@@ -28,6 +28,26 @@ var (
 type SentSplit struct {
 	Left, Delimiter, Right string
 	Buffer                 *string
+
+	leftToken       string
+	leftTokenSource string
+	leftTokenCached bool
+
+	rightToken       string
+	rightTokenSource string
+	rightTokenCached bool
+
+	rightWord       string
+	rightWordSource string
+	rightWordCached bool
+
+	bufferTokens       []string
+	bufferTokensSource *string
+	bufferTokensCached bool
+
+	bufferFirstToken       string
+	bufferFirstTokenSource *string
+	bufferFirstTokenCached bool
 }
 
 // RightSpacePrefix mirrors SentSplit.right_space_prefix (upstream SPACE_PREFIX).
@@ -50,20 +70,34 @@ func (s *SentSplit) LeftSpaceSuffix() bool {
 
 // RightToken mirrors SentSplit.right_token (upstream FIRST_TOKEN).
 func (s *SentSplit) RightToken() string {
+	if s.rightTokenCached && s.rightTokenSource == s.Right {
+		return s.rightToken
+	}
+	s.rightTokenSource = s.Right
+	s.rightTokenCached = true
 	m := firstTokenRE.FindStringSubmatch(s.Right)
 	if m == nil {
+		s.rightToken = ""
 		return ""
 	}
-	return m[1]
+	s.rightToken = m[1]
+	return s.rightToken
 }
 
 // LeftToken mirrors SentSplit.left_token (upstream LAST_TOKEN).
 func (s *SentSplit) LeftToken() string {
+	if s.leftTokenCached && s.leftTokenSource == s.Left {
+		return s.leftToken
+	}
+	s.leftTokenSource = s.Left
+	s.leftTokenCached = true
 	m := lastTokenRE.FindStringSubmatch(s.Left)
 	if m == nil {
+		s.leftToken = ""
 		return ""
 	}
-	return m[1]
+	s.leftToken = m[1]
+	return s.leftToken
 }
 
 // LeftPairSokr mirrors SentSplit.left_pair_sokr (upstream PAIR_SOKR).
@@ -86,11 +120,18 @@ func (s *SentSplit) LeftIntSokr() (word string, ok bool) {
 
 // RightWord mirrors SentSplit.right_word (upstream WORD).
 func (s *SentSplit) RightWord() string {
+	if s.rightWordCached && s.rightWordSource == s.Right {
+		return s.rightWord
+	}
+	s.rightWordSource = s.Right
+	s.rightWordCached = true
 	m := wordRE.FindStringSubmatch(s.Right)
 	if m == nil {
+		s.rightWord = ""
 		return ""
 	}
-	return m[1]
+	s.rightWord = m[1]
+	return s.rightWord
 }
 
 // BufferTokens mirrors SentSplit.buffer_tokens (upstream TOKEN.findall); unset buffer returns nil.
@@ -98,7 +139,13 @@ func (s *SentSplit) BufferTokens() []string {
 	if s.Buffer == nil {
 		return nil
 	}
-	return tokenRE.FindAllString(*s.Buffer, -1)
+	if s.bufferTokensCached && s.bufferTokensSource == s.Buffer {
+		return s.bufferTokens
+	}
+	s.bufferTokensSource = s.Buffer
+	s.bufferTokensCached = true
+	s.bufferTokens = tokenRE.FindAllString(*s.Buffer, -1)
+	return s.bufferTokens
 }
 
 // BufferFirstToken mirrors SentSplit.buffer_first_token; unset buffer returns "".
@@ -106,11 +153,18 @@ func (s *SentSplit) BufferFirstToken() string {
 	if s.Buffer == nil {
 		return ""
 	}
+	if s.bufferFirstTokenCached && s.bufferFirstTokenSource == s.Buffer {
+		return s.bufferFirstToken
+	}
+	s.bufferFirstTokenSource = s.Buffer
+	s.bufferFirstTokenCached = true
 	m := firstTokenRE.FindStringSubmatch(*s.Buffer)
 	if m == nil {
+		s.bufferFirstToken = ""
 		return ""
 	}
-	return m[1]
+	s.bufferFirstToken = m[1]
+	return s.bufferFirstToken
 }
 
 func onlyWhitespace(text string) bool {
@@ -124,34 +178,49 @@ func onlyWhitespace(text string) bool {
 
 // runePrefixBefore returns the last maxRunes runes of s[:endByte].
 func runePrefixBefore(s string, endByte, maxRunes int) string {
-	if endByte <= 0 {
+	if endByte <= 0 || maxRunes <= 0 {
 		return ""
 	}
 	if endByte > len(s) {
 		endByte = len(s)
 	}
-	prefix := s[:endByte]
-	runes := []rune(prefix)
-	if len(runes) <= maxRunes {
-		return prefix
+	start := endByte
+	for range maxRunes {
+		if start <= 0 {
+			break
+		}
+		_, width := utf8.DecodeLastRuneInString(s[:start])
+		if width == 0 {
+			break
+		}
+		start -= width
 	}
-	return string(runes[len(runes)-maxRunes:])
+	return s[start:endByte]
 }
 
 // runeSuffixAfter returns the first maxRunes runes of s[startByte:].
 func runeSuffixAfter(s string, startByte, maxRunes int) string {
+	if maxRunes <= 0 {
+		return ""
+	}
 	if startByte < 0 {
 		startByte = 0
 	}
 	if startByte >= len(s) {
 		return ""
 	}
-	suffix := s[startByte:]
-	runes := []rune(suffix)
-	if len(runes) <= maxRunes {
-		return suffix
+	stop := startByte
+	for range maxRunes {
+		if stop >= len(s) {
+			break
+		}
+		_, width := utf8.DecodeRuneInString(s[stop:])
+		if width == 0 {
+			break
+		}
+		stop += width
 	}
-	return string(runes[:maxRunes])
+	return s[startByte:stop]
 }
 
 // SentPart is one element of the interleaved stream from SentSplitter.__call__:
