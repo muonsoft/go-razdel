@@ -56,6 +56,13 @@ go test -bench=. -benchmem ./...
 go test -run=^$ -bench='Benchmark(Tokenize|Sentenize)' -benchmem -count=5 ./...
 ```
 
+Для PR также доступна автоматическая проверка через GitHub Actions:
+
+- workflow `.github/workflows/benchstat.yml`;
+- снимает бенчмарки на `main` (base) и на текущей ветке PR (head);
+- публикует `benchstat`-diff в комментарии PR;
+- сохраняет сырые результаты как artifacts (`bench-base.txt`, `bench-head.txt`, `benchstat.txt`).
+
 2. Сравнить с baseline из этого файла:
    - в первую очередь `ns/op` и `allocs/op`;
    - отдельно контролировать `punct_heavy`, так как это самый чувствительный сценарий.
