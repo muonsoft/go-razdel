@@ -1,0 +1,51 @@
+name: Parity
+description: Go token/sentence texts differ from Python razdel
+title: "[parity] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when **texts** differ from pinned `razdel.tokenize` / `razdel.sentenize`.
+
+        Numeric `Start`/`End` are supposed to differ on non-ASCII: Go counts UTF-8 bytes, Python counts code points. That is not a parity bug.
+
+        Known tokenize deviations (smiles `:-)`, emoji next to letters) are documented in the README.
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: Exact string in a fenced code block.
+    validations:
+      required: true
+  - type: textarea
+    id: python
+    attributes:
+      label: Python razdel output
+      description: Token or sentence texts from the pinned package (ideally the same commit as `third_party/razdel`).
+    validations:
+      required: true
+  - type: textarea
+    id: go
+    attributes:
+      label: go-razdel output
+      description: Token or sentence texts from this library.
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: go-razdel version or commit, and Python razdel version or submodule SHA.
+    validations:
+      required: true
+  - type: dropdown
+    id: known
+    attributes:
+      label: Is this a documented deviation?
+      options:
+        - Unsure
+        - No — looks like a real mismatch
+        - Yes — I am asking to change the documented behavior
+    validations:
+      required: true

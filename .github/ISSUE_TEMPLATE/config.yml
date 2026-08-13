@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: API reference (pkg.go.dev)
+    url: https://pkg.go.dev/github.com/muonsoft/go-razdel
+    about: Generated Go docs and examples
+  - name: Python razdel
+    url: https://github.com/natasha/razdel
+    about: Issues for the original Python library, not this Go port
