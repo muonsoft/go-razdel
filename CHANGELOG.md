@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-13
+
 ### Добавлено
 
 - Шаблоны GitHub Issues/PR, `CONTRIBUTING.md`, `SECURITY.md` и чеклист публичной страницы репозитория (`docs/github.md`). Метки синхронизируются из `.github/labels.yml`.
