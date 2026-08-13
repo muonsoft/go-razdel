@@ -75,6 +75,10 @@ The original migration task list is complete; it remains as history under [`docs
 
 If the version section already exists in `CHANGELOG.md`, the workflow only publishes the release.
 
+## User-facing docs
+
+Keep [`README.md`](README.md) (English) and [`README.ru.md`](README.ru.md) in sync when examples, the public API, or compatibility notes change.
+
 ## Repository settings (maintainers)
 
 About, topics, and related GitHub UI fields are listed in [`docs/github.md`](docs/github.md). Issue labels are defined in [`.github/labels.yml`](.github/labels.yml) and synced by `.github/workflows/label-sync.yml`.

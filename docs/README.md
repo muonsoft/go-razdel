@@ -1,10 +1,11 @@
 # Documentation
 
-Start with the root [`README.md`](../README.md) if you want to **use** the library.
+Start with the root [`README.md`](../README.md) (English) or [`README.ru.md`](../README.ru.md) (Russian) if you want to **use** the library.
 
 | Document | Audience | Contents |
 | --- | --- | --- |
-| [`README.md`](../README.md) | Users | Install, examples, offsets, Python differences |
+| [`README.md`](../README.md) | Users | Install, examples, offsets, Python differences (English) |
+| [`README.ru.md`](../README.ru.md) | Users | Same guide in Russian |
 | [pkg.go.dev](https://pkg.go.dev/github.com/muonsoft/go-razdel) | Users | Generated API and `Example*` snippets |
 | [`contracts.md`](contracts.md) | Users and contributors | Offset invariant, empty input, invalid UTF-8, known deviations |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | Users | Version history |

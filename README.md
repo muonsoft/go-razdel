@@ -1,12 +1,17 @@
 # go-razdel
 
+**English** | [Русский](README.ru.md)
+
 Rule-based Russian word and sentence tokenizer — a Go port of [natasha/razdel](https://github.com/natasha/razdel).
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/muonsoft/go-razdel.svg)](https://pkg.go.dev/github.com/muonsoft/go-razdel)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/muonsoft/go-razdel)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/muonsoft/go-razdel)
-![GitHub](https://img.shields.io/github/license/muonsoft/go-razdel)
-[![tests](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml/badge.svg)](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml)
+[![CI](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml/badge.svg)](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml)
+[![Corpus](https://github.com/muonsoft/go-razdel/actions/workflows/corpus.yml/badge.svg)](https://github.com/muonsoft/go-razdel/actions/workflows/corpus.yml)
+![Go version](https://img.shields.io/github/go-mod/go-version/muonsoft/go-razdel?logo=go)
+![Release](https://img.shields.io/github/v/release/muonsoft/go-razdel)
+![License: MIT](https://img.shields.io/github/license/muonsoft/go-razdel)
+[![Upstream](https://img.shields.io/badge/upstream-natasha%2Frazdel-3776AB?logo=python&logoColor=white)](https://github.com/natasha/razdel)
+![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
 
 `go-razdel` splits Russian text into **tokens** and **sentences** with the same rule set as Python `razdel`: abbreviations (`т.д.`, initials), decimals (`0.5`, `50/64`), quotes, lists, and dashes.
 
@@ -132,6 +137,7 @@ The public API (`Tokenize`, `Sentenize`, `Token`, `Sentence`, `Span`, byte offse
 
 | Document | What it covers |
 | --- | --- |
+| [`README.ru.md`](README.ru.md) | Same guide in Russian |
 | [pkg.go.dev/github.com/muonsoft/go-razdel](https://pkg.go.dev/github.com/muonsoft/go-razdel) | Generated API reference and examples |
 | [`docs/contracts.md`](docs/contracts.md) | Offsets, empty input, invalid UTF-8, known deviations |
 | [`CHANGELOG.md`](CHANGELOG.md) | User-visible changes |

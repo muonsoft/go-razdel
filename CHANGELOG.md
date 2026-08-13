@@ -12,6 +12,7 @@
 
 - Шаблоны GitHub Issues/PR, `CONTRIBUTING.md`, `SECURITY.md` и чеклист публичной страницы репозитория (`docs/github.md`). Метки синхронизируются из `.github/labels.yml`.
 - Пользовательские `Example*` для канонических примеров natasha/razdel (кружка-термос и сегментация с «т. д.»).
+- Русская версия README (`README.ru.md`) и дополнительные бейджи (CI, полный корпус, upstream `natasha/razdel`, отсутствие зависимостей).
 - Первый публичный релиз библиотеки: `Tokenize` и `Sentenize` с поведенческой совместимостью с pinned [natasha/razdel](https://github.com/natasha/razdel) (`668dbe191a5cfd94bebf9155e2ffa5f94ff3fe33`).
 - Контракт смещений Variant A: `Start`/`End` в байтах UTF-8, полуинтервал `[Start, End)`, инвариант `Text == text[Start:End]`.
 - Unit-parity по upstream `UNIT`, quick corpus в CI, полный `tokens.txt` / `sents.txt` по флагу и в ночном workflow.

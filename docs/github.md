@@ -103,7 +103,7 @@ Issue forms only auto-apply labels that already exist on GitHub (`bug`, `enhance
 
 | File | Role |
 | --- | --- |
-| [`README.md`](../README.md) | Landing page for users |
+| [`README.md`](../README.md) / [`README.ru.md`](../README.ru.md) | Landing page (English / Russian) |
 | [`CONTRIBUTING.md`](../CONTRIBUTING.md) | How to build and test |
 | [`SECURITY.md`](../SECURITY.md) | How to report a vulnerability |
 | [`.github/ISSUE_TEMPLATE/`](../.github/ISSUE_TEMPLATE/) | Bug, feature, parity forms |
