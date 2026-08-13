@@ -1,0 +1,33 @@
+name: Full corpus
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  corpus:
+    name: full upstream corpora
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Tokenize full corpus
+        env:
+          RAZDEL_TOKENIZE_INTEGRATION_FULL: "1"
+        run: go test ./internal/tokenize/ -run TestIntegration_tokenize_full_corpus -count=1 -timeout 20m
+
+      - name: Sentenize full corpus
+        env:
+          RAZDEL_SENTENIZE_INTEGRATION_FULL: "1"
+        run: go test ./internal/sentenize/ -run TestIntegration_sentenize_full_corpus -count=1 -timeout 20m

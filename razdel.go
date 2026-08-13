@@ -31,6 +31,8 @@ type Sentence struct {
 
 // Tokenize splits text into tokens with behavior aligned to upstream
 // third_party/razdel/razdel/segmenters/tokenize.py (atoms, splits, join rules).
+// Invalid UTF-8 does not panic: each invalid byte is an OTHER atom, then the
+// usual join rules apply (see docs/contracts.md).
 func Tokenize(text string) []Token {
 	if text == "" {
 		return nil
@@ -54,6 +56,7 @@ func Tokenize(text string) []Token {
 // (including list_item and dash_right). Each sentence text is strings.TrimSpace on the
 // raw segment chunk, matching Python chunk.strip(); byte spans refer to the trimmed
 // slice in the original UTF-8 string (docs/contracts.md).
+// Invalid UTF-8 does not panic; Python parity is not guaranteed for such input.
 func Sentenize(text string) []Sentence {
 	if strings.TrimSpace(text) == "" {
 		return nil

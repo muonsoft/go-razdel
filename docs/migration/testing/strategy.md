@@ -72,8 +72,8 @@
   - `go vet ./...`
   - `golangci-lint run ./...`
 - Дополнительно (по флагам/тегам):
-  - full corpus;
-  - differential;
+  - full corpus (`RAZDEL_*_INTEGRATION_FULL=1`; nightly `.github/workflows/corpus.yml`);
+  - differential (`RAZDEL_DIFFERENTIAL_PYTHON=1` в CI, fail если Python недоступен);
   - benchmarks.
 
 ## Критерий “coverage high-quality”
