@@ -29,7 +29,7 @@ print(json.dumps([x.text for x in tokenize(s)], ensure_ascii=False))
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
-		t.Skipf("python3 upstream check skipped: %v", err)
+		testkit.SkipOrFailPython(t, "python3 upstream check: "+err.Error())
 	}
 	var texts []string
 	if err := json.Unmarshal(out.Bytes(), &texts); err != nil {
@@ -43,7 +43,7 @@ func TestUpstream_tokenTexts_parity(t *testing.T) {
 	root := testkit.ModuleRoot(t)
 	razdelRoot := filepath.Join(root, "third_party", "razdel")
 	if _, err := os.Stat(filepath.Join(razdelRoot, "razdel", "segmenters", "tokenize.py")); err != nil {
-		t.Skip("third_party/razdel not present:", err)
+		testkit.SkipOrFailPython(t, "third_party/razdel not present: "+err.Error())
 	}
 	// :-) is intentionally not included: Go applies SMILE lookahead (IGO-47); pinned
 	// Python tokenize still splits into ":", "-", ")".
@@ -85,7 +85,7 @@ func TestTokenSpans_ascii_matchesPythonCodeUnitIndices(t *testing.T) {
 	root := testkit.ModuleRoot(t)
 	razdelRoot := filepath.Join(root, "third_party", "razdel")
 	if _, err := os.Stat(filepath.Join(razdelRoot, "razdel", "segmenters", "tokenize.py")); err != nil {
-		t.Skip("third_party/razdel not present:", err)
+		testkit.SkipOrFailPython(t, "third_party/razdel not present: "+err.Error())
 	}
 	const py = `
 import json, sys
@@ -100,7 +100,7 @@ print(json.dumps([[x.start, x.stop] for x in tokenize(s)], ensure_ascii=False))
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
-		t.Skipf("python3 upstream check skipped: %v", err)
+		testkit.SkipOrFailPython(t, "python3 upstream check: "+err.Error())
 	}
 	var pySpans [][]any
 	if err := json.Unmarshal(out.Bytes(), &pySpans); err != nil {

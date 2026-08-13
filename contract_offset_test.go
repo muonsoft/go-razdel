@@ -10,7 +10,6 @@ import (
 )
 
 // Synthetic Token/Sentence slices exercise Variant A offsets (docs/contracts.md) via testkit.
-// They do not call Tokenize/Sentenize; extend with real API assertions when T004+ implements segmentation.
 func TestContract_tokenOffsets_table(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -146,4 +145,29 @@ func TestContract_tokenizeSentenize_validUTF8_noPanic(t *testing.T) {
 			_ = razdel.Sentenize(s)
 		})
 	}
+}
+
+func TestContract_invalidUTF8_noPanicAndOffsets(t *testing.T) {
+	t.Parallel()
+	// docs/contracts.md: invalid bytes are OTHER atoms; join rules still apply,
+	// so LAT/OTHER/LAT collapse into one token. Sentenize has no Python parity.
+	mixed := string([]byte{'a', 0xff, 'b', '.', ' ', 'C'})
+	raw := string([]byte{0xff, 0xfe, 0x80})
+
+	t.Run("tokenize_lat_invalid_lat_joins", func(t *testing.T) {
+		t.Parallel()
+		testkit.AssertTokenTextsEqual(t, mixed, razdel.Tokenize(mixed), []string{"a\xffb", ".", "C"})
+	})
+	t.Run("tokenize_only_invalid_bytes_join", func(t *testing.T) {
+		t.Parallel()
+		testkit.AssertTokenTextsEqual(t, raw, razdel.Tokenize(raw), []string{"\xff\xfe\x80"})
+	})
+	t.Run("sentenize_mixed_two_sentences", func(t *testing.T) {
+		t.Parallel()
+		testkit.AssertSentenceTextsEqual(t, mixed, razdel.Sentenize(mixed), []string{"a\xffb.", "C"})
+	})
+	t.Run("sentenize_only_invalid_bytes", func(t *testing.T) {
+		t.Parallel()
+		testkit.AssertSentenceTextsEqual(t, raw, razdel.Sentenize(raw), []string{"\xff\xfe\x80"})
+	})
 }

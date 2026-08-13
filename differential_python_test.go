@@ -17,8 +17,6 @@ import (
 	"github.com/muonsoft/go-razdel/internal/testkit"
 )
 
-// envRazdelDifferentialPython disables differential runs when set to "0".
-const envRazdelDifferentialPython = "RAZDEL_DIFFERENTIAL_PYTHON"
 const pyDiffCommandTimeout = 20 * time.Second
 
 type pyDiffCase struct {
@@ -43,8 +41,8 @@ var (
 
 func pythonDifferentialReady(root string) (ok bool, reason string) {
 	pyDiffOnce.Do(func() {
-		if os.Getenv(envRazdelDifferentialPython) == "0" {
-			pyDiffReason = envRazdelDifferentialPython + "=0"
+		if testkit.DifferentialPythonDisabled() {
+			pyDiffReason = testkit.EnvDifferentialPython + "=0"
 			return
 		}
 		py, err := exec.LookPath("python3")
@@ -162,7 +160,7 @@ func TestDifferential_tokenize_vsPython_quickSample(t *testing.T) {
 	root := testkit.ModuleRoot(t)
 	ok, why := pythonDifferentialReady(root)
 	if !ok {
-		t.Skip("differential vs Python:", why)
+		testkit.SkipOrFailPython(t, "differential vs Python: "+why)
 	}
 	texts := loadPartitionTexts(t, root, "testdata/upstream/quick_tokens_sample.txt")
 	cases := make([]pyDiffCase, len(texts))
@@ -189,7 +187,7 @@ func TestDifferential_sentenize_vsPython_quickSample(t *testing.T) {
 	root := testkit.ModuleRoot(t)
 	ok, why := pythonDifferentialReady(root)
 	if !ok {
-		t.Skip("differential vs Python:", why)
+		testkit.SkipOrFailPython(t, "differential vs Python: "+why)
 	}
 	texts := loadPartitionTexts(t, root, "testdata/upstream/quick_sents_sample.txt")
 	cases := make([]pyDiffCase, len(texts))

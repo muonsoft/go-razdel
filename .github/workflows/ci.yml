@@ -23,6 +23,8 @@ jobs:
 
       # Quick corpus parity runs with default ./... (T010 quick_tokens_sample.txt, T017 quick_sents_sample.txt).
       - name: Go test
+        env:
+          RAZDEL_DIFFERENTIAL_PYTHON: "1"
         run: go test ./...
 
       - name: Go vet
@@ -33,3 +35,6 @@ jobs:
         with:
           version: v2.11
           args: --timeout=5m
+
+      - name: Changelog script self-test
+        run: bash scripts/prepare-changelog_test.sh

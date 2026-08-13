@@ -50,11 +50,15 @@ The full run compares sentence texts from `razdel.Sentenize` to the **partition 
 
 ## Differential vs Python, fuzz, benchmarks (T018)
 
-**Differential (optional):** `TestDifferential_*_vsPython_quickSample` in the root module compares Go token/sentence **text** sequences to `razdel.tokenize` / `razdel.sentenize` on the same quick corpus inputs. Requires `python3`, an initialized `third_party/razdel` submodule, and a working `PYTHONPATH` to that tree (the test sets it automatically). If `python3` is missing or `import razdel` fails, tests **skip** with a reason. Set `RAZDEL_DIFFERENTIAL_PYTHON=0` to force skip.
+**Differential:** `TestDifferential_*_vsPython_quickSample` in the root module compares Go token/sentence **text** sequences to `razdel.tokenize` / `razdel.sentenize` on the same quick corpus inputs. Requires `python3`, an initialized `third_party/razdel` submodule, and a working `PYTHONPATH` to that tree (the test sets it automatically).
+
+- Unset: skip if Python razdel is unavailable.
+- `RAZDEL_DIFFERENTIAL_PYTHON=0`: always skip.
+- `RAZDEL_DIFFERENTIAL_PYTHON=1` (CI): fail instead of skip.
 
 Driver script: `testdata/python/razdel_diff_runner.py`.
 
-**Fuzz:** native targets `FuzzTokenize` and `FuzzSentenize` (package `github.com/muonsoft/go-razdel` tests). Only valid UTF-8 inputs are exercised; they assert offset invariants via `internal/testkit`. Example local run:
+**Fuzz:** native targets `FuzzTokenize` and `FuzzSentenize` (package `github.com/muonsoft/go-razdel` tests). Inputs may include invalid UTF-8; they assert offset invariants via `internal/testkit`. Example local run:
 
 ```bash
 go test -fuzz=FuzzTokenize  -fuzztime=30s .

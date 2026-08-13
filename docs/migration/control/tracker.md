@@ -35,9 +35,9 @@
 ## Release gate checklist
 
 - [x] Все задачи `T001-T018` в статусе `Done`.
-- [ ] `go test ./...` стабилен.
-- [ ] `go vet ./...` стабилен.
-- [ ] `golangci-lint run ./...` стабилен.
-- [ ] Quick corpus parity в CI стабилен.
-- [ ] Full corpus parity успешно завершен вручную/ночным прогоном.
-- [ ] Все известные расхождения документированы.
+- [x] `go test ./...` стабилен.
+- [x] `go vet ./...` стабилен.
+- [x] `golangci-lint run ./...` стабилен.
+- [x] Quick corpus parity в CI стабилен.
+- [x] Full corpus parity успешно завершен вручную/ночным прогоном (флаги `RAZDEL_*_INTEGRATION_FULL=1`; nightly: `.github/workflows/corpus.yml`).
+- [x] Все известные расхождения документированы (README, `docs/contracts.md`, CHANGELOG).
