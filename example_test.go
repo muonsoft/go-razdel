@@ -19,7 +19,7 @@ func ExampleTokenize_product() {
 	// Кружка-термос | на | 0.5 | л | ( | 50/64 | см³ | , | 516 | ; | ... | )
 }
 
-func ExampleSentenize_dialogue() {
+func ExampleSentenize_razdel() {
 	text := `
 - "Так в чем же дело?" - "Не ра-ду-ют".
 И т. д. и т. п. В общем, вся газета
