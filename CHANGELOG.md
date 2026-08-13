@@ -10,11 +10,18 @@
 
 ### Добавлено
 
+- Шаблоны GitHub Issues/PR, `CONTRIBUTING.md`, `SECURITY.md` и чеклист публичной страницы репозитория (`docs/github.md`). Метки синхронизируются из `.github/labels.yml`.
+- Пользовательские `Example*` для канонических примеров natasha/razdel (кружка-термос, диалог с «т. д.»).
 - Первый публичный релиз библиотеки: `Tokenize` и `Sentenize` с поведенческой совместимостью с pinned [natasha/razdel](https://github.com/natasha/razdel) (`668dbe191a5cfd94bebf9155e2ffa5f94ff3fe33`).
 - Контракт смещений Variant A: `Start`/`End` в байтах UTF-8, полуинтервал `[Start, End)`, инвариант `Text == text[Start:End]`.
 - Unit-parity по upstream `UNIT`, quick corpus в CI, полный `tokens.txt` / `sents.txt` по флагу и в ночном workflow.
 - Differential-тесты Go vs Python, fuzz по инвариантам смещений, бенчмарки.
 - GitHub Actions workflow **Release**: кнопка в Actions публикует GitHub Release и переносит `[Unreleased]` из этого файла в версионную секцию.
+
+### Изменено
+
+- README ориентирован на пользователей библиотеки: установка, примеры, смещения, отличия от Python. Инструкции для разработки перенесены в `CONTRIBUTING.md`.
+- `LICENSE` приведён к каноническому MIT (чтобы GitHub определял лицензию); атрибуция natasha/razdel вынесена в `NOTICE`.
 
 ### Известные ограничения
 

@@ -1,0 +1,9 @@
+go-razdel
+Copyright (c) 2026 MuonSoft
+
+This product includes a Go port of segmentation rules and abbreviation lists
+derived from natasha/razdel (https://github.com/natasha/razdel),
+Copyright (c) 2017, MIT License.
+
+The upstream tree is vendored as a git submodule at third_party/razdel;
+see that directory's LICENSE.

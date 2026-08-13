@@ -1,0 +1,33 @@
+name: Feature
+description: New behavior or API that is not a Python-parity fix
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Changes that would make Go texts diverge from Python `razdel` need a strong reason and a README/contracts note.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard or impossible with the current API?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: API sketch or example input/output.
+    validations:
+      required: true
+  - type: dropdown
+    id: parity
+    attributes:
+      label: Effect on Python parity
+      options:
+        - No change to token/sentence texts
+        - Would match Python more closely
+        - Would diverge from Python (explain why)
+    validations:
+      required: true

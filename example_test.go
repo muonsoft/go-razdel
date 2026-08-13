@@ -2,10 +2,37 @@ package razdel_test
 
 import (
 	"fmt"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/muonsoft/go-razdel"
 )
+
+func ExampleTokenize_product() {
+	text := "Кружка-термос на 0.5л (50/64 см³, 516;...)"
+	var parts []string
+	for _, tok := range razdel.Tokenize(text) {
+		parts = append(parts, tok.Text)
+	}
+	fmt.Println(strings.Join(parts, " | "))
+	// Output:
+	// Кружка-термос | на | 0.5 | л | ( | 50/64 | см³ | , | 516 | ; | ... | )
+}
+
+func ExampleSentenize_dialogue() {
+	text := `
+- "Так в чем же дело?" - "Не ра-ду-ют".
+И т. д. и т. п. В общем, вся газета
+`
+	for _, sent := range razdel.Sentenize(text) {
+		fmt.Println(sent.Text)
+	}
+	// Output:
+	// - "Так в чем же дело?"
+	// - "Не ра-ду-ют".
+	// И т. д. и т. п.
+	// В общем, вся газета
+}
 
 func ExampleTokenize() {
 	text := "Привет, мир!"

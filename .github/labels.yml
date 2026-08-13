@@ -1,0 +1,52 @@
+# Default GitHub labels plus project-specific ones.
+# Synced by .github/workflows/label-sync.yml (skip-delete: existing extra labels stay).
+
+- name: bug
+  color: "d73a4a"
+  description: Something isn't working
+- name: documentation
+  color: "0075ca"
+  description: Improvements or additions to documentation
+- name: duplicate
+  color: "cfd3d7"
+  description: This issue or pull request already exists
+- name: enhancement
+  color: "a2eeef"
+  description: New feature or request
+- name: good first issue
+  color: "7057ff"
+  description: Good for newcomers
+- name: help wanted
+  color: "008672"
+  description: Extra attention is needed
+- name: invalid
+  color: "e4e669"
+  description: This doesn't seem right
+- name: question
+  color: "d876e3"
+  description: Further information is requested
+- name: wontfix
+  color: "ffffff"
+  description: This will not be worked on
+
+- name: tokenize
+  color: "1d76db"
+  description: Tokenizer (Tokenize)
+- name: sentenize
+  color: "0e8a16"
+  description: Sentence splitter (Sentenize)
+- name: parity
+  color: "fbca04"
+  description: Behavioral match with Python razdel
+- name: performance
+  color: "d93f0b"
+  description: Speed, allocations, benchmarks
+- name: ci
+  color: "5319e7"
+  description: GitHub Actions and test infrastructure
+- name: api
+  color: "006b75"
+  description: Public API or offset contract
+- name: upstream
+  color: "c5def5"
+  description: natasha/razdel submodule or upstream behavior

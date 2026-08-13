@@ -1,165 +1,147 @@
 # go-razdel
 
+Rule-based Russian word and sentence tokenizer — a Go port of [natasha/razdel](https://github.com/natasha/razdel).
+
 [![Go Reference](https://pkg.go.dev/badge/github.com/muonsoft/go-razdel.svg)](https://pkg.go.dev/github.com/muonsoft/go-razdel)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/muonsoft/go-razdel)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/muonsoft/go-razdel)
 ![GitHub](https://img.shields.io/github/license/muonsoft/go-razdel)
 [![tests](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml/badge.svg)](https://github.com/muonsoft/go-razdel/actions/workflows/ci.yml)
 
-`go-razdel` — Go-порт библиотеки сегментации текста **razdel** с фокусом на поведенческую совместимость с Python-оригиналом.
+`go-razdel` splits Russian text into **tokens** and **sentences** with the same rule set as Python `razdel`: abbreviations (`т.д.`, initials), decimals (`0.5`, `50/64`), quotes, lists, and dashes.
 
-Первый фиксированный релиз: **v0.1.0**. История изменений — [`CHANGELOG.md`](CHANGELOG.md).
+No models, no CGO, no extra dictionaries to download. Requires **Go 1.24+**.
 
-## Основной проект
+Rules are tuned for **news and fiction** (the same domains as upstream). On social media, scientific papers, or legal text the result may be worse — that is expected.
 
-Эталонная реализация, на которую ориентируется этот репозиторий:
-
-- [natasha/razdel (GitHub)](https://github.com/natasha/razdel)
-- [razdel (PyPI)](https://pypi.org/project/razdel/)
-
-Upstream закреплён git-submodule `third_party/razdel` (MIT, Copyright 2017). Правила сегментации и списки сокращений в Go-коде производны от этого дерева; см. также `LICENSE`.
-
-## Возможности
-
-- Публичный API:
-  - `Tokenize(text string) []Token`
-  - `Sentenize(text string) []Sentence`
-- Контракт смещений: `Start`/`End` в **байтах UTF-8**, полуинтервал `[Start, End)`.
-- `Tokenize` и `Sentenize` возвращают `Text == text[Start:End]` для каждого элемента.
-- Проверки parity с upstream:
-  - unit-набор для `Tokenize` и `Sentenize`;
-  - differential-тесты (Go vs Python) для быстрых выборок токенов и предложений.
-- Фаззинг и инварианты для оффсетов.
-
-## Совместимость (v0.1)
-
-Публичный API v0.1 (`Tokenize`, `Sentenize`, `Span`, `Token`, `Sentence`) и байтовые смещения Variant A **заморожены по смыслу**. Ломающие изменения в 0.x идут с bump minor (например 0.2.0) и записью в CHANGELOG.
-
-Это линейка **0.x**: [Go modules](https://go.dev/blog/v2-go-modules) не дают compatibility guarantee до v1.0.0. После soak планируется v1.0.0 с той же семантикой, если API не придётся ломать.
-
-Минимальная версия языка: **Go 1.24**.
-
-## Ограничения и важные отличия
-
-- Числовые смещения в Go и Python могут отличаться на Unicode-тексте, потому что:
-  - в Go API фиксирует **байтовые** индексы;
-  - в Python upstream работает с индексами `str` (кодпоинты).
-- Parity корректно сравнивать по последовательности `Text`, а не по «сырым» индексам без пересчета.
-
-### Невалидный UTF-8
-
-Python `str` не содержит невалидный UTF-8; Go-строка может.
-
-- `Tokenize` не паникует. Каждый невалидный байт — атом `OTHER`. Join-правила те же, что для прочих `OTHER`: соседние `OTHER`/`RU`/`LAT` склеиваются, поэтому `a\xffb` даёт один токен `"a\xffb"`, а не три.
-- `Sentenize` не паникует, инвариант смещений сохраняется. Parity с Python для такого ввода не обещается.
-- Внутренний `ByteSpans` паникует только если stripped-чанк не найден в исходной строке (программная ошибка пайплайна, не пользовательский ввод).
-
-### Токенизация: смайлы и emoji (IGO-47)
-
-Зафиксировано **контролируемое отклонение** от pinned `razdel.segmenters.tokenize` (см. [upstream #17](https://github.com/natasha/razdel/issues/17), [#2](https://github.com/natasha/razdel/issues/2)):
-
-- Смайлы вида `:-)`, `;-)`, `=-)` склеиваются в один токен (lookahead к следующему пунктуационному атому), чтобы не резать на `:`, `-`, `)`.
-- Эмодзи (по эвристике, близкой к Unicode Extended Pictographic) **отделяются** от соседних кириллических/латинских букв: например `✅Сдается` → `✅`, `Сдается`; `счетчики💰` → `счетчики`, `💰`.
-
-Инвариант смещений сохраняется: для каждого токена `Text == text[Start:End]` (байтовые индексы UTF-8).
-
-Детали контрактов и инвариантов: `docs/contracts.md`.
-Базовые метрики и процесс контроля регрессий: `docs/performance.md`.
-
-## Установка
+## Install
 
 ```bash
 go get github.com/muonsoft/go-razdel
 ```
 
-Для разработки в этом репозитории (нужен upstream submodule):
+## Usage
 
-```bash
-git clone git@github.com:muonsoft/go-razdel.git
-cd go-razdel
-git submodule update --init --recursive
-```
+Same examples as [natasha/razdel](https://github.com/natasha/razdel), so a Python user can compare the two by eye.
 
-## Быстрый пример
+### Tokens
 
 ```go
 package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/muonsoft/go-razdel"
 )
 
 func main() {
-	text := "Привет, мир! Это тест."
-
+	text := "Кружка-термос на 0.5л (50/64 см³, 516;...)"
+	var parts []string
 	for _, tok := range razdel.Tokenize(text) {
-		fmt.Printf("TOKEN  [%d:%d] %q\n", tok.Start, tok.End, tok.Text)
+		parts = append(parts, tok.Text)
 	}
-
-	for _, sent := range razdel.Sentenize(text) {
-		fmt.Printf("SENT   [%d:%d] %q\n", sent.Start, sent.End, sent.Text)
-	}
+	fmt.Println(strings.Join(parts, " | "))
 }
 ```
 
-## Структуры данных
-
-- `Span`:
-  - `Start int`
-  - `End int`
-- `Token`:
-  - `Span`
-  - `Text string`
-- `Sentence`:
-  - `Span`
-  - `Text string`
-
-## Проверка и разработка
-
-Минимальный локальный набор:
-
-```bash
-go test ./...
-go vet ./...
-golangci-lint run ./...
+```
+Кружка-термос | на | 0.5 | л | ( | 50/64 | см³ | , | 516 | ; | ... | )
 ```
 
-Differential-тесты с Python требуют:
+### Sentences
 
-- `python3` в `PATH`;
-- доступный submodule `third_party/razdel`;
-- импорт `razdel` через `PYTHONPATH` (настраивается тестами автоматически).
+```go
+text := `
+- "Так в чем же дело?" - "Не ра-ду-ют".
+И т. д. и т. п. В общем, вся газета
+`
 
-В CI differential **обязан** выполниться (`RAZDEL_DIFFERENTIAL_PYTHON=1`: skip превращается в fail). Локально skip сохраняется, если Python недоступен.
-
-Отключить differential-тесты:
-
-```bash
-RAZDEL_DIFFERENTIAL_PYTHON=0 go test ./...
+for _, sent := range razdel.Sentenize(text) {
+	fmt.Println(sent.Text)
+}
 ```
 
-Полный корпус (~209k tokenize / ~49k sentenize) — вручную или ночной workflow `.github/workflows/corpus.yml`:
-
-```bash
-RAZDEL_TOKENIZE_INTEGRATION_FULL=1 go test ./internal/tokenize/ -run TestIntegration_tokenize_full_corpus -count=1
-RAZDEL_SENTENIZE_INTEGRATION_FULL=1 go test ./internal/sentenize/ -run TestIntegration_sentenize_full_corpus -count=1
+```
+- "Так в чем же дело?"
+- "Не ра-ду-ют".
+И т. д. и т. п.
+В общем, вся газета
 ```
 
-## Релизы
+Runnable copies of these snippets live in [`example_test.go`](example_test.go) and on [pkg.go.dev](https://pkg.go.dev/github.com/muonsoft/go-razdel).
 
-Релиз создаётся кнопкой в GitHub Actions (**Actions → Release → Run workflow**) с версией вида `v0.1.0`. Workflow также срабатывает на push тега `v*.*.*`.
+## API
 
-Перед релизом добавляйте пользовательские изменения в секцию **`## [Unreleased]`** в [`CHANGELOG.md`](CHANGELOG.md). При публикации workflow:
+```go
+tokens := razdel.Tokenize(text)   // []Token
+sents  := razdel.Sentenize(text)  // []Sentence
+```
 
-1. прогоняет тесты (включая обязательный Python differential), vet и lint;
-2. проверяет, что в `[Unreleased]` есть записи;
-3. переносит `[Unreleased]` в секцию `[x.y.z]` с датой UTC;
-4. оставляет пустой `[Unreleased]` для следующего цикла;
-5. коммитит changelog в `main`;
-6. публикует GitHub Release; текст релиза берётся из новой версионной секции.
+Each item has `Text` plus a half-open span `[Start, End)` into the original string (`Span` is embedded, so `tok.Start` works):
 
-Если секция для версии уже есть в `CHANGELOG.md`, workflow не дублирует её и только публикует релиз.
+```go
+type Span struct {
+	Start int // UTF-8 byte offset, inclusive
+	End   int // UTF-8 byte offset, exclusive
+}
 
-Запускайте **Run workflow** с ветки `main`.
+type Token struct {
+	Span
+	Text string // always equal to text[Start:End]
+}
+
+type Sentence struct {
+	Span
+	Text string
+}
+```
+
+Empty input (and whitespace-only input for `Sentenize`) returns a nil slice. Neither function returns an error or panics on ordinary text, including invalid UTF-8.
+
+`Start`/`End` are **UTF-8 bytes**, not Unicode code points. That is the unit Go uses for `len` and `s[i:j]`, so you can slice the original string directly:
+
+```go
+text := "a ж" // 4 bytes, 3 runes: 'a' is 1 byte, 'ж' is 2
+toks := razdel.Tokenize(text)
+// "a" [0:1]
+// "ж" [2:4]
+fmt.Println(text[toks[1].Start:toks[1].End] == "ж") // true
+```
+
+Python `razdel` counts code points, so numeric offsets often differ on Cyrillic even when the token **texts** match. Compare implementations by `Text`, not by raw indexes.
+
+Sentence spans point at the **trimmed** slice (leading/trailing whitespace is dropped, same as Python `chunk.strip()`).
+
+## Compatibility with Python razdel
+
+Token and sentence **texts** follow pinned [natasha/razdel](https://github.com/natasha/razdel) (`third_party/razdel`, commit `668dbe191a5cfd94bebf9155e2ffa5f94ff3fe33`), checked in CI against upstream unit cases, a quick corpus, and a live Python differential.
+
+Two intentional tokenize differences (also discussed upstream as [razdel#17](https://github.com/natasha/razdel/issues/17) and [razdel#2](https://github.com/natasha/razdel/issues/2)):
+
+| Input | Python `razdel` | `go-razdel` |
+| --- | --- | --- |
+| `:-)` `;-)` `=-)` | `:`, `-`, `)` | one token `:-)` |
+| `✅Сдается` | one token | `✅`, `Сдается` |
+| `счетчики💰` | one token | `счетчики`, `💰` |
+
+The public API (`Tokenize`, `Sentenize`, `Token`, `Sentence`, `Span`, byte offsets) is frozen in meaning for 0.x: breaking changes bump **minor** (0.2.0) and are listed in [`CHANGELOG.md`](CHANGELOG.md). Go modules do not promise compatibility until v1.0.0.
+
+## Documentation
+
+| Document | What it covers |
+| --- | --- |
+| [pkg.go.dev/github.com/muonsoft/go-razdel](https://pkg.go.dev/github.com/muonsoft/go-razdel) | Generated API reference and examples |
+| [`docs/contracts.md`](docs/contracts.md) | Offsets, empty input, invalid UTF-8, known deviations |
+| [`CHANGELOG.md`](CHANGELOG.md) | User-visible changes |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Tests, parity checks, releases |
+| [`docs/README.md`](docs/README.md) | Full documentation index |
+
+## Contributing
+
+Issues and pull requests are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for tests, parity rules, and the release button.
+
+## License
+
+[MIT](LICENSE). Segmentation rules and abbreviation lists are derived from [natasha/razdel](https://github.com/natasha/razdel) (MIT, Copyright 2017). Attribution: [NOTICE](NOTICE); upstream tree: `third_party/razdel`.
